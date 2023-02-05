@@ -45,13 +45,22 @@ class Key:
             for i in range(len(self.intervals))
         ]
 
-    def to_track(self, velocity=127, duration=1.0, tempo=180):
+    def to_track(
+        self,
+        velocity: int = 127,
+        duration: float = 1.0,
+        tempo: float = 180
+    ):
         return Track.from_notes([
             [note + (12 if note < self.key.value else 0)]
             for note in self.note_values + [self.key.value + 12]
         ], tempo=tempo, velocity=velocity, duration=duration)
 
-    def chord(self, degree: int = 1, form: ChordForm = ChordForm.Shell):
+    def chord(
+        self,
+        degree: int = 1,
+        form: ChordForm = ChordForm.Shell
+    ):
         return [
             self.note_values[(i + degree - 1) % len(self.note_values)]
             for i in form.value
