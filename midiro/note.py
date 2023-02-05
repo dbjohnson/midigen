@@ -1,3 +1,7 @@
+"""
+Enumerate the MIDI notes for the common
+12-tone equal temperament scale starting at C0
+"""
 from enum import Enum
 
 

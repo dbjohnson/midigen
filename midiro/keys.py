@@ -45,14 +45,22 @@ class Key:
             for i in range(len(self.intervals))
         ]
 
+        self.note_values = [
+            note.value + (12 if note.value < self.key.value else 0)
+            for note in self.notes
+        ]
+
     def to_track(
         self,
         velocity: int = 127,
         duration: float = 1.0,
         tempo: float = 180
     ):
+        """
+        Generate an ascending scale track
+        """
         return Track.from_notes([
-            [note + (12 if note < self.key.value else 0)]
+            [note]
             for note in self.note_values + [self.key.value + 12]
         ], tempo=tempo, velocity=velocity, duration=duration)
 
@@ -61,11 +69,12 @@ class Key:
         degree: int = 1,
         form: ChordForm = ChordForm.Shell
     ):
+        """
+        Generate a chord from the key
+        For example, a basic triad for the C major chord would be:
+        Key(Note.C).chord(1, ChordForm.Triad)
+        """
         return [
             self.note_values[(i + degree - 1) % len(self.note_values)]
             for i in form.value
         ]
-
-    @property
-    def note_values(self):
-        return [note.value for note in self.notes]
