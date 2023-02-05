@@ -28,20 +28,30 @@ class Scale:
     def __init__(self, key: Note, mode: Mode):
         self.key = key
         self.mode = mode
-        self.notes = [
-            list(Note)[(key.value + mode.value + interval) % len(Note)].value
-            for interval in [0, 2, 4, 5, 7, 9, 11, 12]
+
+        self.intervals = [
+            [2, 2, 1, 2, 2, 2, 1][
+                (degree + mode.value - 1) % 7
+            ]
+            for degree in range(7)
         ]
 
-    def play(self, port, duration=1.0, tempo=80):
+        self.notes = [
+            list(Note)[(
+                key.value + sum(self.intervals[:i])
+            ) % len(Note)]
+            for i in range(len(self.intervals))
+        ]
+
+    def play(self, port, velocity=127, duration=1.0, tempo=180):
         Sequencer().play(port, [
             Message(
                 'note_on',
-                note=note,
-                velocity=127,
-                time=tempo / 60 * duration
+                note=note + (12 if note < self.key.value else 0),
+                velocity=velocity,
+                time=duration
             )
-            for note in self.notes
+            for note in [n.value for n in self.notes] + [self.key.value + 12]
         ], tempo)
 
 
@@ -52,11 +62,16 @@ class Chord:
         degree: int,
         form: ChordForm = ChordForm.Triad
     ):
-        self.scale = Scale(key, list(Mode)[degree])
+        self.scale = Scale(key, Mode.Ionian)
         self.notes = [
-            self.scale.notes[i] for i in form.value
+            self.scale.notes[(i + degree - 1) % len(self.scale.notes)]
+            for i in form.value
         ]
 
     def play(self, port, duration=1.0, velocity=80):
         for note in self.notes:
-            port.send(Message('note_on', note=note, velocity=velocity))
+            port.send(Message(
+                'note_on',
+                note=note.value,
+                velocity=velocity
+            ))
