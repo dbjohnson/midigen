@@ -4,7 +4,7 @@ from enum import Enum
 from mido import Message, second2tick, bpm2tempo
 
 
-TICKS_PER_BEAT = 1000
+TICKS_PER_BEAT = 480
 
 
 class NoteLength(Enum):

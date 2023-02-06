@@ -19,6 +19,9 @@ class Track:
         self.duration_ticks = duration_ticks
         self.messages = sorted(messages, key=lambda m: m.time)
         self.meta_messages = sorted(meta_messages, key=lambda m: m.time)
+        self.meta_messages = [
+            m for m in self.meta_messages if m.type != 'end_of_track'
+        ] + [MetaMessage('end_of_track', time=self.duration_ticks)]
 
     @staticmethod
     def from_measures(measures: List[Measure], name: str = 'midiro'):
@@ -32,7 +35,7 @@ class Track:
                         'time_signature',
                         numerator=measure.time_signature.numerator,
                         denominator=measure.time_signature.denominator.value,
-                        time=measure.messages[0].time
+                        time=measure.messages[0].time,
                     ),
                     MetaMessage(
                         'set_tempo',
@@ -75,19 +78,11 @@ class Track:
         return Track(
             duration_ticks=self.duration_ticks,
             messages=[
-                Message(
-                    msg.type,
-                    note=msg.note,
-                    velocity=msg.velocity,
-                    time=msg.time + offs_ticks
-                )
+                msg.copy(time=msg.time + offs_ticks)
                 for msg in self.messages
             ],
             meta_messages=[
-                MetaMessage(**{
-                    **msg.dict(),
-                    'time': msg.time + offs_ticks
-                })
+                msg.copy(time=msg.time + offs_ticks)
                 for msg in self.meta_messages
             ]
         )
@@ -96,12 +91,7 @@ class Track:
         return Track(
             duration=self.duration,
             messages=[
-                Message(
-                    msg.type,
-                    note=msg.note + offs,
-                    velocity=msg.velocity,
-                    time=msg.time
-                )
+                msg.copy(note=msg.note + offs)
                 for msg in self.messages
             ],
             meta_messages=self.meta_messages
@@ -124,11 +114,17 @@ class Track:
 
     def to_midi_track(self):
         track = MidiTrack()
-        for msg in sorted(
+        sorted_msgs = sorted(
             self.messages + self.meta_messages,
             key=lambda msg: msg.time
-        ):
-            track.append(msg)
+        )
+        # convert timestamps to deltas
+        tlast = sorted_msgs[0].time
+        for msg in sorted_msgs:
+            track.append(
+                msg.copy(time=msg.time - tlast)
+            )
+            tlast = msg.time
 
         return track
 
@@ -145,7 +141,7 @@ class Song:
             track.play(port)
 
     def to_midi(self, name: str):
-        mid = MidiFile()
+        mid = MidiFile(ticks_per_beat=TICKS_PER_BEAT)
         for track in self.tracks:
             mid.tracks.append(track.to_midi_track())
         mid.save(name)
