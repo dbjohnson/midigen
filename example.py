@@ -1,14 +1,14 @@
 import mido
-from midiro.keys import Key, Mode, ChordForm
 from midiro.note import Note
-from midiro.sequencer import Song, Track
+from midiro.keys import Key, Mode, ChordForm
 from midiro.time import TimeSignature, NoteLength, Measure
+from midiro.sequencer import Song, Track
 
 
 port = mido.open_output('midiro', virtual=True)
 
-# A major scale
-Key(Note.A, Mode.Major).to_track(tempo=200).play(port)
+# C major scale
+Key(Note.C, Mode.Major).to_track(tempo=200).play(port)
 
 
 # Simple sequence with two scales played together
@@ -31,11 +31,12 @@ chords = Track.from_measures([
         ] * time_signature.numerator,
         time_signature=time_signature,
         tempo=tempo,
-        velocity=50
+        velocity=90
     )
     for degree in progression
 ], name='chords')
 chords.play(port)
+
 
 # A simple melody
 melody = Track.from_measures([
@@ -57,7 +58,7 @@ melody.play(port)
 # Stack the melody and chords in a single track
 chords.stack(melody).play(port)
 
-# Or use the Sequence class to play multiple tracks
+# Or use the Song class to play multiple tracks
 Song([chords, melody]).play(port)
 
 # Write the song to a MIDI file

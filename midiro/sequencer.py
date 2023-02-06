@@ -17,8 +17,8 @@ class Track:
         meta_messages: List[MetaMessage] = [],
     ):
         self.duration_ticks = duration_ticks
-        self.messages = messages
-        self.meta_messages = meta_messages
+        self.messages = sorted(messages, key=lambda m: m.time)
+        self.meta_messages = sorted(meta_messages, key=lambda m: m.time)
 
     @staticmethod
     def from_measures(measures: List[Measure], name: str = 'midiro'):
