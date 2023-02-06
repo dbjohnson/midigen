@@ -1,6 +1,8 @@
 from enum import Enum
+
 from midiro.sequencer import Track
 from midiro.note import Note
+from midiro.time import Measure, TimeSignature, NoteLength
 
 
 class Mode(Enum):
@@ -39,9 +41,7 @@ class Key:
         ]
 
         self.notes = [
-            list(Note)[(
-                key.value + sum(self.intervals[:i])
-            ) % len(Note)]
+            key + sum(self.intervals[:i])
             for i in range(len(self.intervals))
         ]
 
@@ -49,6 +49,9 @@ class Key:
             note.value + (12 if note.value < self.key.value else 0)
             for note in self.notes
         ]
+
+    def note(self, degree: int):
+        return self.notes[(degree - 1) % len(self.notes)]
 
     def to_track(
         self,
@@ -59,10 +62,18 @@ class Key:
         """
         Generate an ascending scale track
         """
-        return Track.from_notes([
-            [note]
-            for note in self.note_values + [self.key.value + 12]
-        ], tempo=tempo, velocity=velocity, duration=duration)
+        return Track.from_measures([
+            Measure.from_pattern(
+                pattern=[
+                    [note]
+                    for note in self.note_values + [self.key.value + 12]
+                ],
+                time_signature=TimeSignature(8, NoteLength.Quarter),
+                tempo=tempo,
+                velocity=velocity,
+                duration=duration
+            )
+        ])
 
     def chord(
         self,

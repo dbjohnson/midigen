@@ -23,3 +23,9 @@ class Note(Enum):
     A_SHARP = 70
     Bb = 70
     B = 71
+
+    def __add__(self, offset: int):
+        return list(Note)[(self.value + offset) % len(Note)]
+
+    def __sub__(self, offset: int):
+        return list(Note)[(self.value - offset) % len(Note)]
