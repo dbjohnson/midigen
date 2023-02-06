@@ -130,7 +130,6 @@ class Track:
         ):
             track.append(msg)
 
-
         return track
 
     def to_midi(self, name: str):
