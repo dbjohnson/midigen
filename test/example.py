@@ -1,5 +1,5 @@
 import mido
-from midiro.note import Note
+from midiro.notes import Note
 from midiro.keys import Key, Mode, ChordForm
 from midiro.time import TimeSignature, NoteLength, Measure
 from midiro.sequencer import Song, Track

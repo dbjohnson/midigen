@@ -1,7 +1,7 @@
 from enum import Enum
 
 from midiro.sequencer import Track
-from midiro.note import Note
+from midiro.notes import Note
 from midiro.time import Measure, TimeSignature, NoteLength
 
 
@@ -13,17 +13,25 @@ class Mode(Enum):
     Mixolydian = 5
     Aeolian = 6
     Locrian = 7
+    I = 1  # noqa
+    ii = 2
+    iii = 3
+    IV = 4
+    V = 5
+    vi = 6
+    vii = 7
     Major = 1
     Minor = 6
+    Diminished = 7
 
 
 class ChordForm(Enum):
-    Shell = [2, 6]
-    Triad = [0, 2, 4]
-    Seventh = [0, 2, 4, 6]
-    Ninth = [0, 2, 4, 6, 8]
-    Eleventh = [0, 2, 4, 6, 8, 10]
-    Thirteenth = [0, 2, 4, 6, 8, 10, 12]
+    Shell = [3, 7]
+    Triad = [1, 3, 5]
+    Seventh = [1, 3, 5, 7]
+    Ninth = [1, 3, 5, 7, 9]
+    Eleventh = [1, 3, 5, 7, 9, 11]
+    Thirteenth = [1, 3, 5, 7, 9, 11, 13]
 
 
 class Key:
@@ -86,6 +94,6 @@ class Key:
         Key(Note.C).chord(1, ChordForm.Triad)
         """
         return [
-            self.note_values[(i + degree - 1) % len(self.note_values)]
+            self.note_values[(i - 1 + degree - 1) % len(self.note_values)]
             for i in form.value
         ]

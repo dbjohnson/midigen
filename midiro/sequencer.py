@@ -140,10 +140,6 @@ class Song:
         for track in self.tracks:
             track.play(port)
 
-    def loop(self, port: BaseOutput, n: int = 10):
-        for _ in range(n):
-            self.play(port)
-
     def to_midi(self, name: str):
         mid = MidiFile(ticks_per_beat=TICKS_PER_BEAT)
         for track in self.tracks:
