@@ -10,7 +10,7 @@ Python library for generating simple chord progression midi files
 import mido
 from midigen.notes import Note
 from midigen.keys import Key, Mode
-from midigen.time import TimeSignature, NoteLength, Measure
+from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Song, Track, play_notes
 
 
@@ -21,7 +21,7 @@ Key(Note.C, Mode.Major).to_track(tempo=200).play(port)
 
 # A simple chord progression
 key = Key(Note.C, Mode.Major)
-time_signature = TimeSignature(4, NoteLength.Quarter)
+time_signature = TimeSignature(4, 4)
 tempo = 90
 progression = [2, 5, 1, 6]
 
@@ -68,4 +68,3 @@ Song([chords, melody]).play(port)
 # Write the song to a MIDI file
 Song([chords, melody]).to_midi('example.mid')
 ```
-

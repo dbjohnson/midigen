@@ -5,7 +5,7 @@ from itertools import product
 
 from midigen.sequencer import Track
 from midigen.notes import Note
-from midigen.time import Measure, TimeSignature, NoteLength
+from midigen.time import Measure, TimeSignature
 
 
 class Mode(Enum):
@@ -84,7 +84,7 @@ class Key:
                         self.note_values + [self.note_values[0]]
                     )
                 ],
-                time_signature=TimeSignature(8, NoteLength.Quarter),
+                time_signature=TimeSignature(8, 4),
                 tempo=tempo,
                 velocity=velocity,
                 duration=duration

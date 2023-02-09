@@ -1,5 +1,4 @@
 from typing import List
-from enum import Enum
 
 from mido import Message, second2tick, bpm2tempo
 
@@ -7,22 +6,11 @@ from mido import Message, second2tick, bpm2tempo
 TICKS_PER_BEAT = 480
 
 
-class NoteLength(Enum):
-    Whole = 1
-    Half = 2
-    Quarter = 4
-    Eighth = 8
-    Sixteenth = 16
-    ThirtySecond = 32
-    SixtyFourth = 64
-    HundredTwentyEighth = 128
-
-
 class TimeSignature:
     def __init__(
         self,
         numerator: int = 4,
-        denominator: NoteLength = NoteLength.Quarter
+        denominator: int = 4
     ):
         self.numerator = numerator
         self.denominator = denominator
@@ -31,7 +19,7 @@ class TimeSignature:
 class Measure:
     def __init__(
         self,
-        time_signature: TimeSignature = TimeSignature(4, NoteLength.Quarter),
+        time_signature: TimeSignature = TimeSignature(4, 4),
         tempo: float = 120,
         messages: List[Message] = []
     ):
@@ -47,7 +35,7 @@ class Measure:
     @staticmethod
     def from_pattern(
         pattern: List[List[int]],
-        time_signature: TimeSignature = TimeSignature(4, NoteLength.Quarter),
+        time_signature: TimeSignature = TimeSignature(4, 4),
         tempo: float = 120,
         velocity: int = 127,
         duration: float = 0.99,

@@ -34,7 +34,7 @@ class Track:
                     MetaMessage(
                         'time_signature',
                         numerator=measure.time_signature.numerator,
-                        denominator=measure.time_signature.denominator.value,
+                        denominator=measure.time_signature.denominator,
                         time=measure.messages[0].time,
                     ),
                     MetaMessage(
@@ -50,7 +50,7 @@ class Track:
             ))
         return t
 
-    def play(self, port: BaseOutput):
+    def play(self, port: BaseOutput, block=False):
         def play():
             tstart = time.time()
             for msg in self.messages:
@@ -72,7 +72,10 @@ class Track:
 
                 port.send(msg)
 
-        Thread(target=play).start()
+        if block:
+            play()
+        else:
+            Thread(target=play).start()
 
     def shift_time(self, offs_ticks: int):
         return Track(
@@ -136,9 +139,9 @@ class Song:
     def __init__(self, tracks: List[Track] = []):
         self.tracks = tracks
 
-    def play(self, port: BaseOutput):
+    def play(self, port: BaseOutput, block=False):
         for track in self.tracks:
-            track.play(port)
+            track.play(port, block)
 
     def to_midi(self, name: str):
         mid = MidiFile(ticks_per_beat=TICKS_PER_BEAT)
