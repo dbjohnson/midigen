@@ -101,7 +101,7 @@ class Key:
     def parse_chord(chord: str):
         match = re.match(
             (
-                r'(?P<note>[A-Ga-g]?)'
+                r'(?P<note>([A-Ga-g][b|#]?)?)'
                 r'(?P<degree>[iIV]*)'
                 r'(?P<mode>(maj|min|m|M)?)'
                 r'(?P<sus>(sus)?)'
@@ -112,7 +112,7 @@ class Key:
         ).groupdict()
 
         return Key(
-            Note[(match['note'] or 'C').upper()],
+            Note[match['note'].replace('#', '_SHARP') or 'C'],
             Mode[{
                 'm': 'Minor',
                 'min': 'Minor',
