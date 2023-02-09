@@ -145,3 +145,24 @@ class Song:
         for track in self.tracks:
             mid.tracks.append(track.to_midi_track())
         mid.save(name)
+
+
+def play_notes(notes, port, spacing_secs=0, velocity=90):
+    """
+    Simple function to play a list of notes on a given port.
+    """
+    for note in notes:
+        port.send(Message(
+            'note_on',
+            note=note,
+            velocity=velocity
+        ))
+
+        time.sleep(max(0.5, spacing_secs / 2))
+
+        port.send(Message(
+            'note_off',
+            note=note,
+        ))
+
+        time.sleep(spacing_secs / 2)

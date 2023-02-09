@@ -1,4 +1,6 @@
+from typing import List
 from enum import Enum
+from itertools import product
 
 from midigen.sequencer import Track
 from midigen.notes import Note
@@ -24,14 +26,13 @@ class Mode(Enum):
     Minor = 6
     Diminished = 7
 
+    def __add__(self, offset: int):
+        for mode in Mode:
+            if (mode.value) % 8 == (self.value + offset) % 8:
+                return mode
 
-class ChordForm(Enum):
-    Shell = [3, 7]
-    Triad = [1, 3, 5]
-    Seventh = [1, 3, 5, 7]
-    Ninth = [1, 3, 5, 7, 9]
-    Eleventh = [1, 3, 5, 7, 9, 11]
-    Thirteenth = [1, 3, 5, 7, 9, 11, 13]
+    def __sub__(self, offset: int):
+        return self + (-offset)
 
 
 class Key:
@@ -41,12 +42,10 @@ class Key:
 
         # find the intervals by rotating the ionian mode
         # intervals by the mode value
-        self.intervals = [
-            [2, 2, 1, 2, 2, 2, 1][
-                (degree + mode.value - 1) % 7
-            ]
-            for degree in range(7)
-        ]
+        self.intervals = _rotate(
+            [2, 2, 1, 2, 2, 2, 1],
+            mode.value - 1
+        )
 
         self.notes = [
             key + sum(self.intervals[:i])
@@ -57,6 +56,12 @@ class Key:
             note.value + (12 if note.value < self.key.value else 0)
             for note in self.notes
         ]
+
+    def relative_key(self, degree):
+        return Key(
+            self.note(degree),
+            self.mode + (degree - 1)
+        )
 
     def note(self, degree: int):
         return self.notes[(degree - 1) % len(self.notes)]
@@ -74,7 +79,9 @@ class Key:
             Measure.from_pattern(
                 pattern=[
                     [note]
-                    for note in self.note_values + [self.key.value + 12]
+                    for note in _rectify(
+                        self.note_values + [self.note_values[0]]
+                    )
                 ],
                 time_signature=TimeSignature(8, NoteLength.Quarter),
                 tempo=tempo,
@@ -83,17 +90,75 @@ class Key:
             )
         ])
 
+    def triad(self, inversion: int = 0):
+        return self.__chord([1, 3, 5], inversion)
+
+    def shell(self):
+        return self.__chord([3, 7])
+
     def chord(
         self,
-        degree: int = 1,
-        form: ChordForm = ChordForm.Shell
+        extensions=[],
+        inversion: int = 0,
+        match_voicing: List[int] = None
     ):
-        """
-        Generate a chord from the key
-        For example, a basic triad for the C major chord would be:
-        Key(Note.C).chord(1, ChordForm.Triad)
-        """
-        return [
-            self.note_values[(i - 1 + degree - 1) % len(self.note_values)]
-            for i in form.value
-        ]
+        notes = self.__chord(
+            [1, 3, 5] + extensions,
+            inversion
+        )
+
+        if match_voicing:
+            # find a voicing that best matches the indicated tones
+            return min([
+                [
+                    n + o for n, o in zip(notes, offsets)
+                ]
+                for offsets in product(
+                    [-12, 0, 12],
+                    repeat=len(notes)
+                )
+            ],
+                key=lambda voicing: sum([
+                    abs(n - m)
+                    for n, m in product(voicing, match_voicing)
+                ])
+            )
+        else:
+            return notes
+
+    def __chord(self, notes, inversion: int = 0):
+        assert 0 <= inversion < len(notes)
+        return _rectify(
+            _rotate(
+                [
+                    # every other note up to the 13th degree
+                    self.note(i).value - (12 if inversion > 0 else 0)
+                    for i in notes
+                ],
+                inversion
+            )
+        )
+
+    def __eq__(self, other: 'Key'):
+        return set(self.notes) == set(other.notes)
+
+    def __repr__(self):
+        return f'{self.key.name} {self.mode.name}'
+
+
+def _rotate(seq, n):
+    return seq[n:] + seq[:n]
+
+
+def _rectify(sequence: List[int]):
+    """
+    ensure note value sequence is monotonically increasing;
+    add octaves as necessary
+    """
+    if sequence != sorted(sequence):
+        return _rectify([sequence[0]] + [
+            v + (12 if v < prior else 0)
+            for v, prior in zip(sequence[1:], sequence)
+        ])
+    else:
+        return sequence

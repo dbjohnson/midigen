@@ -1,8 +1,8 @@
 import mido
 from midigen.notes import Note
-from midigen.keys import Key, Mode, ChordForm
+from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, NoteLength, Measure
-from midigen.sequencer import Song, Track
+from midigen.sequencer import Song, Track, play_notes
 
 
 port = mido.open_output('midigen', virtual=True)
@@ -10,16 +10,8 @@ port = mido.open_output('midigen', virtual=True)
 # C major scale
 Key(Note.C, Mode.Major).to_track(tempo=200).play(port)
 
-
-# Simple sequence with two scales played together
-Song([
-    Key(Note.A, Mode.Major).to_track(),
-    Key(Note.C, Mode.Aeolian).to_track()
-]).play(port)
-
-
 # A simple chord progression
-key = Key(Note.C)
+key = Key(Note.C, Mode.Major)
 time_signature = TimeSignature(4, NoteLength.Quarter)
 tempo = 90
 progression = [2, 5, 1, 6]
@@ -27,7 +19,11 @@ progression = [2, 5, 1, 6]
 chords = Track.from_measures([
     Measure.from_pattern(
         pattern=[
-            key.chord(degree, ChordForm.Shell)
+            key.relative_key(degree).chord(
+                [7],
+                # pick a voicing close to the root triad
+                match_voicing=key.triad()
+            )
         ] * time_signature.numerator,
         time_signature=time_signature,
         tempo=tempo,
@@ -36,7 +32,6 @@ chords = Track.from_measures([
     for degree in progression
 ], name='chords')
 chords.play(port)
-
 
 # A simple melody
 melody = Track.from_measures([

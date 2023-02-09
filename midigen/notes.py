@@ -25,7 +25,9 @@ class Note(Enum):
     B = 71
 
     def __add__(self, offset: int):
-        return list(Note)[(self.value + offset) % len(Note)]
+        for note in Note:
+            if (note.value) % 12 == (self.value + offset) % 12:
+                return note
 
     def __sub__(self, offset: int):
-        return list(Note)[(self.value - offset) % len(Note)]
+        return self + (-offset)
