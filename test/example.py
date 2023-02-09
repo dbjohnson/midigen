@@ -1,11 +1,11 @@
 import mido
-from midiro.notes import Note
-from midiro.keys import Key, Mode, ChordForm
-from midiro.time import TimeSignature, NoteLength, Measure
-from midiro.sequencer import Song, Track
+from midigen.notes import Note
+from midigen.keys import Key, Mode, ChordForm
+from midigen.time import TimeSignature, NoteLength, Measure
+from midigen.sequencer import Song, Track
 
 
-port = mido.open_output('midiro', virtual=True)
+port = mido.open_output('midigen', virtual=True)
 
 # C major scale
 Key(Note.C, Mode.Major).to_track(tempo=200).play(port)

@@ -6,7 +6,7 @@ from mido import Message, MetaMessage, MidiFile, MidiTrack
 from mido import bpm2tempo, tick2second
 from mido.ports import BaseOutput
 
-from midiro.time import Measure, TICKS_PER_BEAT
+from midigen.time import Measure, TICKS_PER_BEAT
 
 
 class Track:
@@ -24,7 +24,7 @@ class Track:
         ] + [MetaMessage('end_of_track', time=self.duration_ticks)]
 
     @staticmethod
-    def from_measures(measures: List[Measure], name: str = 'midiro'):
+    def from_measures(measures: List[Measure], name: str = 'midigen'):
         t = Track(0, [])
         for measure in measures:
             t = t.append(Track(

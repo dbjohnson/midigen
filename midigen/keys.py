@@ -1,8 +1,8 @@
 from enum import Enum
 
-from midiro.sequencer import Track
-from midiro.notes import Note
-from midiro.time import Measure, TimeSignature, NoteLength
+from midigen.sequencer import Track
+from midigen.notes import Note
+from midigen.time import Measure, TimeSignature, NoteLength
 
 
 class Mode(Enum):
