@@ -1,3 +1,4 @@
+import re
 from typing import List
 from enum import Enum
 from itertools import product
@@ -95,6 +96,35 @@ class Key:
 
     def shell(self):
         return self.__chord([3, 7])
+
+    @staticmethod
+    def parse_chord(chord: str):
+        match = re.match(
+            (
+                r'(?P<note>[A-Ga-g]?)'
+                r'(?P<degree>[iIV]*)'
+                r'(?P<mode>(maj|min|m|M)?)'
+                r'(?P<sus>(sus)?)'
+                r'(?P<ext>(ext)?[0-9]*)'
+            ),
+            chord,
+            re.IGNORECASE
+        ).groupdict()
+
+        return Key(
+            Note[(match['note'] or 'C').upper()],
+            Mode[{
+                'm': 'Minor',
+                'min': 'Minor',
+                'maj': 'Major',
+                'Maj': 'Major',
+                'M': 'Major',
+            }[(match['mode'] or 'M').title()]],
+        ).relative_key(
+            Mode[match['degree'] or 'I'].value
+        ).chord(
+            list(range(7, int(match['ext'] or '5') + 1, 2))
+        )
 
     def chord(
         self,

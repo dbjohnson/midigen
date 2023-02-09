@@ -51,3 +51,12 @@ def test_voicing():
     prev
     assert key.chord([], match_voicing=prev) == prev
     assert key.chord([7], match_voicing=prev) == prev + [59]
+
+
+def test_chord_parser():
+    for text, expected in (
+        ('C', Key(Note.C, Mode.Major).chord([])),
+        ('ii', Key(Note.C, Mode.Major).relative_key(2).chord([])),
+        ('C9', Key(Note.C, Mode.Major).chord([7, 9])),
+    ):
+        assert Key.parse_chord(text) == expected
