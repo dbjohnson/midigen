@@ -12,9 +12,10 @@ from midigen.time import Measure, TICKS_PER_BEAT
 class Track:
     def __init__(
         self,
-        duration_ticks: int,
+        duration_ticks: int = 0,
         messages: List[Message] = [],
         meta_messages: List[MetaMessage] = [],
+        channel: int = 0
     ):
         self.duration_ticks = duration_ticks
         self.messages = sorted(messages, key=lambda m: m.time)
@@ -22,10 +23,15 @@ class Track:
         self.meta_messages = [
             m for m in self.meta_messages if m.type != 'end_of_track'
         ] + [MetaMessage('end_of_track', time=self.duration_ticks)]
+        self.channel = channel
 
     @staticmethod
-    def from_measures(measures: List[Measure], name: str = 'midigen'):
-        t = Track(0, [])
+    def from_measures(
+        measures: List[Measure],
+        channel: int = 0,
+        name: str = 'midigen',
+    ):
+        t = Track(channel=channel)
         for measure in measures:
             t = t.append(Track(
                 measure.duration_ticks,
@@ -46,11 +52,12 @@ class Track:
                         'track_name',
                         name=name
                     )
-                ]
+                ],
+                channel
             ))
         return t
 
-    def play(self, port: BaseOutput, block=False):
+    def play(self, port: BaseOutput, block=True):
         def play():
             tstart = time.time()
             for msg in self.messages:
@@ -70,12 +77,12 @@ class Track:
                 while (dt := msg_time_secs - (time.time() - tstart)) > 0:
                     time.sleep(dt)
 
-                port.send(msg)
+                port.send(msg.copy(channel=self.channel))
 
+        t = Thread(target=play)
+        t.start()
         if block:
-            play()
-        else:
-            Thread(target=play).start()
+            t.join()
 
     def shift_time(self, offs_ticks: int):
         return Track(
@@ -87,17 +94,19 @@ class Track:
             meta_messages=[
                 msg.copy(time=msg.time + offs_ticks)
                 for msg in self.meta_messages
-            ]
+            ],
+            channel=self.channel
         )
 
     def shift_pitch(self, offs: int):
         return Track(
-            duration=self.duration,
+            duration_ticks=self.duration_ticks,
             messages=[
                 msg.copy(note=msg.note + offs)
                 for msg in self.messages
             ],
-            meta_messages=self.meta_messages
+            meta_messages=self.meta_messages,
+            channel=self.channel
         )
 
     def append(self, other: 'Track'):
@@ -105,27 +114,31 @@ class Track:
         return Track(
             self.duration_ticks + other.duration_ticks,
             self.messages + shifted.messages,
-            self.meta_messages + shifted.meta_messages
+            self.meta_messages + shifted.meta_messages,
+            self.channel
         )
 
     def stack(self, other: 'Track'):
         return Track(
             max(self.duration_ticks, other.duration_ticks),
             self.messages + other.messages,
-            self.meta_messages + other.meta_messages
+            self.meta_messages + other.meta_messages,
+            self.channel
         )
 
     def to_midi_track(self):
         track = MidiTrack()
         sorted_msgs = sorted(
-            self.messages + self.meta_messages,
+            [m.copy(channel=self.channel) for m in self.messages] + self.meta_messages,
             key=lambda msg: msg.time
         )
         # convert timestamps to deltas
         tlast = sorted_msgs[0].time
         for msg in sorted_msgs:
             track.append(
-                msg.copy(time=msg.time - tlast)
+                msg.copy(
+                    time=msg.time - tlast
+                )
             )
             tlast = msg.time
 
@@ -139,9 +152,9 @@ class Song:
     def __init__(self, tracks: List[Track] = []):
         self.tracks = tracks
 
-    def play(self, port: BaseOutput, block=False):
-        for track in self.tracks:
-            track.play(port, block)
+    def play(self, port: BaseOutput, block=True):
+        for i, track in enumerate(self.tracks):
+            track.play(port, block=i == len(self.tracks) - 1)
 
     def to_midi(self, name: str):
         mid = MidiFile(ticks_per_beat=TICKS_PER_BEAT)

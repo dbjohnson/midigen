@@ -44,7 +44,7 @@ class Measure:
         Generate a one measure sequence of notes; the pattern
         is a list of notes to play at each beat
         """
-        assert len(pattern) == time_signature.numerator
+        # assert len(pattern) == time_signature.numerator
 
         return Measure(
             time_signature=time_signature,

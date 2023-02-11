@@ -1,10 +1,12 @@
 import argparse
+import time
 
 import mido
 
 from midigen.keys import Key
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
+from midigen import rhythm
 
 
 if __name__ == '__main__':
@@ -24,6 +26,13 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-r',
+        '--rhythm',
+        type=str,
+        help='Canned rhythm to use',
+    )
+
+    parser.add_argument(
         '-t',
         '--tempo',
         required=False,
@@ -40,6 +49,14 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-l',
+        '--loop',
+        type=int,
+        default=0,
+        help='loop n times'
+    )
+
+    parser.add_argument(
         '-p',
         '--play',
         default=False,
@@ -49,7 +66,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    track = Track.from_measures([
+    chords = Track.from_measures([
         Measure.from_pattern(
             pattern=[
                 Key.parse_chord(args.key + chord)
@@ -59,10 +76,32 @@ if __name__ == '__main__':
             velocity=90
         )
         for chord in args.chords
-    ], name='chords')
+    ],
+        channel=1,
+        name='chords',
+    )
+    chords = chords.shift_pitch(-7)
+
+    beat = Track.from_measures([
+        rhythm.straight_16th(
+            tempo=args.tempo,
+            velocity=127
+        )
+        for meas in args.chords
+    ]).stack(Track.from_measures([
+        rhythm.son_clave(
+            tempo=args.tempo,
+            velocity=127
+        )
+        for meas in args.chords
+    ]))
+
+    song = Song([beat, chords])
 
     if args.play:
         port = mido.open_output('midigen', virtual=True)
-        track.play(port, block=True)
+        time.sleep(2)
+        for _ in range(args.loop):
+            song.play(port, block=True)
 
-    Song([track]).to_midi(args.output)
+    song.to_midi(args.output)
