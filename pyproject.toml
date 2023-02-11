@@ -46,4 +46,4 @@ push = true
 midigen = "midigen.generate:main"
 
 [tool.setuptools.package-data]
-mypkg = ["*.csv"]
+midigen = ["*.csv"]
