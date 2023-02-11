@@ -13,11 +13,13 @@ class Track:
     def __init__(
         self,
         duration_ticks: int = 0,
+        duration_secs: int = 0,
         messages: List[Message] = [],
         meta_messages: List[MetaMessage] = [],
         channel: int = 0
     ):
         self.duration_ticks = duration_ticks
+        self.duration_secs = duration_secs
         self.messages = sorted(messages, key=lambda m: m.time)
         self.meta_messages = sorted(meta_messages, key=lambda m: m.time)
         self.meta_messages = [
@@ -30,11 +32,14 @@ class Track:
         measures: List[Measure],
         channel: int = 0,
         name: str = 'midigen',
+        stack: bool = False
     ):
         t = Track(channel=channel)
         for measure in measures:
-            t = t.append(Track(
+            merge_method = t.stack if stack else t.append
+            t = merge_method(Track(
                 measure.duration_ticks,
+                measure.duration_secs,
                 measure.messages,
                 [
                     MetaMessage(
@@ -57,7 +62,7 @@ class Track:
             ))
         return t
 
-    def play(self, port: BaseOutput, block=True):
+    def play(self, port: BaseOutput, block=False):
         def play():
             tstart = time.time()
             for msg in self.messages:
@@ -87,6 +92,7 @@ class Track:
     def shift_time(self, offs_ticks: int):
         return Track(
             duration_ticks=self.duration_ticks,
+            duration_secs=self.duration_secs,
             messages=[
                 msg.copy(time=msg.time + offs_ticks)
                 for msg in self.messages
@@ -101,6 +107,7 @@ class Track:
     def shift_pitch(self, offs: int):
         return Track(
             duration_ticks=self.duration_ticks,
+            duration_secs=self.duration_secs,
             messages=[
                 msg.copy(note=msg.note + offs)
                 for msg in self.messages
@@ -113,6 +120,7 @@ class Track:
         shifted = other.shift_time(self.duration_ticks)
         return Track(
             self.duration_ticks + other.duration_ticks,
+            self.duration_secs + other.duration_secs,
             self.messages + shifted.messages,
             self.meta_messages + shifted.meta_messages,
             self.channel
@@ -121,10 +129,24 @@ class Track:
     def stack(self, other: 'Track'):
         return Track(
             max(self.duration_ticks, other.duration_ticks),
+            max(self.duration_secs, other.duration_secs),
             self.messages + other.messages,
             self.meta_messages + other.meta_messages,
             self.channel
         )
+
+    def loop(self, n: int):
+        t = Track(
+            self.duration_ticks,
+            self.duration_secs,
+            self.messages,
+            self.meta_messages,
+            self.channel
+        )
+        for _ in range(n - 1):
+            t = t.append(self)
+
+        return t
 
     def to_midi_track(self):
         track = MidiTrack()
@@ -154,7 +176,15 @@ class Song:
 
     def play(self, port: BaseOutput, block=True):
         for i, track in enumerate(self.tracks):
-            track.play(port, block=i == len(self.tracks) - 1)
+            track.play(port)
+
+        if block:
+            secs = max([t.duration_secs for t in self.tracks])
+            time.sleep(secs)
+
+    def loop(self, port: BaseOutput, n: int):
+        for _ in range(n):
+            self.play(port)
 
     def to_midi(self, name: str):
         mid = MidiFile(ticks_per_beat=TICKS_PER_BEAT)

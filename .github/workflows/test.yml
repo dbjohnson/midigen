@@ -1,4 +1,4 @@
-name: run tests 
+name: tests 
 
 on: [push]
 
@@ -20,8 +20,12 @@ jobs:
         run: |
           sudo apt-get install libasound2-dev
           python -m pip install --upgrade pip
-          pip install flake8 pytest
+          pip install flake8 pytest build twine
+          python -m build
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Check build
+        run: |
+          twine check dist/*
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names

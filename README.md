@@ -4,7 +4,16 @@
 
 Python library for generating simple chord progression midi files
 
-### Example usage
+## Example usage
+### Command line
+
+Play a `ii-V-I-vi` pattern in the key of `G`; loop it four times 
+```cmd
+python midigen/generate.py --key G --chords ii V I vi  --loop 4 --play
+```
+
+### Python
+
 
 ```python
 import mido

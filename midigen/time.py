@@ -26,8 +26,9 @@ class Measure:
         self.time_signature = time_signature
         self.tempo = tempo
         self.messages = messages
+        self.duration_secs = 60 / self.tempo * time_signature.numerator
         self.duration_ticks = int(second2tick(
-            60 / tempo * time_signature.numerator,
+            self.duration_secs,
             TICKS_PER_BEAT,
             bpm2tempo(tempo)
         ))
@@ -44,7 +45,9 @@ class Measure:
         Generate a one measure sequence of notes; the pattern
         is a list of notes to play at each beat
         """
-        # assert len(pattern) == time_signature.numerator
+        # ensure pattern is a multiple of the time signature
+        assert len(pattern) % time_signature.numerator == 0
+        step = time_signature.numerator / len(pattern)
 
         return Measure(
             time_signature=time_signature,
@@ -60,7 +63,7 @@ class Measure:
                         note=note,
                         velocity=velocity,
                         time=int(second2tick(
-                            60 / tempo * i,
+                            60 / tempo * i * step,
                             TICKS_PER_BEAT,
                             bpm2tempo(tempo)
                         ))
@@ -70,7 +73,7 @@ class Measure:
                         note=note,
                         velocity=velocity,
                         time=int(second2tick(
-                            60 / tempo * (i + duration),
+                            60 / tempo * (i + duration) * step,
                             TICKS_PER_BEAT,
                             bpm2tempo(tempo)
                         ))

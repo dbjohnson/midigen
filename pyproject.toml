@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "midigen"
+version = "0.0.1"
+description = ""
+readme = "README.md"
+authors = [{ name = "Bryan Johnson", email = "d.bryan.johnson@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["midi", "generative", "audio", "music"]
+dependencies = [
+	"mido>=1.2.10",
+	"python-rtmidi>=1.4.9"
+]
+requires-python = ">=3.6"
+
+[project.optional-dependencies]
+dev = ["bumpver", "pytest", "build", "twine"]
+
+[project.urls]
+Homepage = "https://github.com/dbjohnson/midigen"
+
+[tool.bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"',
+]
+"src/midigen/__init__.py" = ["{version}"]
+
+[project.scripts]
+midigen = "midigen.generate:main"
+
+[tool.setuptools.package-data]
+mypkg = ["*.csv"]

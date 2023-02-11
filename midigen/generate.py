@@ -9,7 +9,7 @@ from midigen.sequencer import Track, Song
 from midigen import rhythm
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-k',
@@ -82,25 +82,28 @@ if __name__ == '__main__':
     )
 
     beat = Track.from_measures([
-        rhythm.straight_16th(
+        pattern(
             tempo=args.tempo,
-            velocity=127
+            velocity=127,
         )
-        for meas in args.chords
-    ]).stack(Track.from_measures([
-        rhythm.son_clave(
-            tempo=args.tempo,
-            velocity=127
+        for pattern in (
+            rhythm.four_on_the_floor,
+            rhythm.son_clave,
+            rhythm.straight_16th
         )
-        for meas in args.chords
-    ]))
+    ],
+        stack=True
+    ).loop(len(args.chords))
 
     song = Song([beat, chords])
 
     if args.play:
         port = mido.open_output('midigen', virtual=True)
         time.sleep(2)
-        for _ in range(args.loop):
-            song.play(port, block=True)
+        song.loop(port, args.loop)
 
     song.to_midi(args.output)
+
+
+if __name__ == '__main__':
+    main()
