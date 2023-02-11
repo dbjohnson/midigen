@@ -9,7 +9,7 @@ from midigen.time import TimeSignature, Measure
 
 with resource_stream("midigen", "percussion_map.csv") as fh:
     NOTES = {
-        key: value
+        key: int(value)
         for row in fh.read().decode().strip().split('\n')[1:]
         for (key, value) in [row.split(',')]
     }
