@@ -52,7 +52,7 @@ if __name__ == '__main__':
         '-l',
         '--loop',
         type=int,
-        default=0,
+        default=1,
         help='loop n times'
     )
 
@@ -80,7 +80,6 @@ if __name__ == '__main__':
         channel=1,
         name='chords',
     )
-    chords = chords.shift_pitch(-7)
 
     beat = Track.from_measures([
         rhythm.straight_16th(
