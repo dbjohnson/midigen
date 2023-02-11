@@ -44,7 +44,7 @@ def main():
     parser.add_argument(
         '-o',
         '--output',
-        default='output.mid',
+        required=False,
         help='output file'
     )
 
@@ -102,7 +102,8 @@ def main():
         time.sleep(2)
         song.loop(port, args.loop)
 
-    song.to_midi(args.output)
+    if args.output:
+        song.to_midi(args.output)
 
 
 if __name__ == '__main__':
