@@ -1,5 +1,7 @@
 # midigen
-![](https://github.com/dbjohnson/midigen/actions/workflows/test.yml/badge.svg)
+[![License](https://img.shields.io/github/license/dbjohnson/midigen.svg)]()
+[![PyPi](https://img.shields.io/pypi/v/midigen.svg)](https://pypi.python.org/pypi/looptimer)
+![GHA](https://github.com/dbjohnson/midigen/actions/workflows/test.yml/badge.svg)
 
 
 Python library for generating simple chord progression midi files
