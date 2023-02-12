@@ -120,7 +120,7 @@ def main():
     bass = Track.from_measures([
         Measure.from_pattern(
             pattern=[
-                [n.value - 24]
+                [n.value - 24 if n.value >= 24 else n.value]
                 for k in [Key.parse(args.key + chord)[0]]
                 for n in [k.note(degree) for degree in (1, 3, 5, 1)]
             ],
