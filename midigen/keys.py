@@ -98,7 +98,7 @@ class Key:
         return self.__chord([3, 7])
 
     @staticmethod
-    def parse_chord(chord: str):
+    def parse(key: str):
         match = re.match(
             (
                 r'(?P<note>([A-Ga-g][b|#]?)?)'
@@ -107,7 +107,7 @@ class Key:
                 r'(?P<sus>(sus)?)'
                 r'(?P<ext>(ext)?[0-9]*)'
             ),
-            chord,
+            key,
             re.IGNORECASE
         ).groupdict()
 
@@ -122,8 +122,13 @@ class Key:
             }[(match['mode'] or 'M').title()]],
         ).relative_key(
             Mode[match['degree'] or 'I'].value
-        ).chord(
-            list(range(7, int(match['ext'] or '5') + 1, 2))
+        ), match['ext']
+
+    @staticmethod
+    def parse_chord(chord: str):
+        key, ext = Key.parse(chord)
+        return key.chord(
+            list(range(7, int(ext or '5') + 1, 2))
         )
 
     def chord(

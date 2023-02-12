@@ -86,14 +86,14 @@ def main():
         )
 
     chords = Track.from_measures([
-        humanize(Measure.from_pattern(
+        Measure.from_pattern(
             pattern=[
                 Key.parse_chord(args.key + chord)
             ] * 4,
             time_signature=TimeSignature(4, 4),
             tempo=args.tempo,
             velocity=90
-        ))
+        ).mutate(humanize)
         for chord in args.chords
     ],
         channel=1,
@@ -102,12 +102,10 @@ def main():
 
     beat = Track.string_tracks([
         Track.from_measures([
-            humanize(
-                pattern(
-                    tempo=args.tempo,
-                    velocity=127,
-                )
-            )
+            pattern(
+                tempo=args.tempo,
+                velocity=127,
+            ).mutate(humanize)
             for pattern in (
                 rhythm.four_on_the_floor,
                 rhythm.son_clave,
@@ -119,7 +117,24 @@ def main():
         for _ in range(len(args.chords))
     ])
 
-    song = Song([beat, chords])
+    bass = Track.from_measures([
+        Measure.from_pattern(
+            pattern=[
+                [n.value - 24]
+                for k in [Key.parse(args.key + chord)[0]]
+                for n in [k.note(degree) for degree in (1, 3, 5, 1)]
+            ],
+            time_signature=TimeSignature(4, 4),
+            tempo=args.tempo,
+            velocity=90
+        ).mutate(humanize)
+        for chord in args.chords
+    ],
+        channel=1,
+        name='bass',
+    )
+
+    song = Song([beat, chords, bass])
 
     if args.play:
         port = mido.open_output('midigen', virtual=True)

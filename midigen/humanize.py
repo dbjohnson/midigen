@@ -5,32 +5,32 @@ from midigen.time import Measure
 def add_swing(measure: Measure, swing: float = 0.1):
     shift = int(swing * measure.beat_duration_ticks)
 
-    def swung_beat(time):
-        beat_frac = (time % measure.beat_duration_ticks) / measure.beat_duration_ticks
-        return max(0, int(time + beat_frac * shift))
+    def swung_beat(msg):
+        beat_frac = (msg.time % measure.beat_duration_ticks) / measure.beat_duration_ticks
+        return max(0, int(msg.time + beat_frac * shift))
 
     return Measure(
         measure.time_signature,
         measure.tempo,
         [
-            msg.copy(time=swung_beat(msg.time))
+            msg.copy(time=swung_beat(msg))
             for msg in measure.messages
         ],
     )
 
 
 def randomize(measure: Measure, beat_frac: float = 0.01):
-    def randomized(time):
+    def randomized(msg):
         return max(
             0,
-            int(time + random.normalvariate(0, beat_frac) * measure.beat_duration_ticks)
+            int(msg.time + random.normalvariate(0, beat_frac * measure.beat_duration_ticks))
         )
 
     return Measure(
         measure.time_signature,
         measure.tempo,
         [
-            msg.copy(time=randomized(msg.time))
+            msg.copy(time=randomized(msg))
             for msg in measure.messages
         ],
     )

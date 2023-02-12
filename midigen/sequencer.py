@@ -46,12 +46,12 @@ class Track:
                         'time_signature',
                         numerator=measure.time_signature.numerator,
                         denominator=measure.time_signature.denominator,
-                        time=measure.messages[0].time,
+                        time=min(m.time for m in measure.messages)
                     ),
                     MetaMessage(
                         'set_tempo',
                         tempo=int(bpm2tempo(measure.tempo)),
-                        time=measure.messages[0].time
+                        time=min(m.time for m in measure.messages)
                     ),
                     MetaMessage(
                         'track_name',

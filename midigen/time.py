@@ -41,6 +41,9 @@ class Measure:
             bpm2tempo(tempo)
         ))
 
+    def mutate(self, msg_mutator: callable):
+        return msg_mutator(self)
+
     @staticmethod
     def from_pattern(
         pattern: List[List[int]],
