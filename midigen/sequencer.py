@@ -136,15 +136,13 @@ class Track:
         )
 
     def loop(self, n: int):
-        t = Track(
-            self.duration_ticks,
-            self.duration_secs,
-            self.messages,
-            self.meta_messages,
-            self.channel
-        )
-        for _ in range(n - 1):
-            t = t.append(self)
+        return Track.string_tracks([self] * n)
+
+    @staticmethod
+    def string_tracks(tracks: List['Track']):
+        t = Track()
+        for track in tracks:
+            t = t.append(track)
 
         return t
 

@@ -26,7 +26,15 @@ class Measure:
         self.time_signature = time_signature
         self.tempo = tempo
         self.messages = messages
-        self.duration_secs = 60 / self.tempo * time_signature.numerator
+
+        self.beat_duration_secs = 60 / tempo
+        self.beat_duration_ticks = int(second2tick(
+            self.beat_duration_secs,
+            TICKS_PER_BEAT,
+            bpm2tempo(tempo)
+        ))
+
+        self.duration_secs = self.beat_duration_secs * time_signature.numerator
         self.duration_ticks = int(second2tick(
             self.duration_secs,
             TICKS_PER_BEAT,
@@ -49,6 +57,11 @@ class Measure:
         assert len(pattern) % time_signature.numerator == 0
         step = time_signature.numerator / len(pattern)
 
+        template = Measure(
+            time_signature=time_signature,
+            tempo=tempo
+        )
+
         return Measure(
             time_signature=time_signature,
             tempo=tempo,
@@ -62,21 +75,13 @@ class Measure:
                         'note_on',
                         note=note,
                         velocity=velocity,
-                        time=int(second2tick(
-                            60 / tempo * i * step,
-                            TICKS_PER_BEAT,
-                            bpm2tempo(tempo)
-                        ))
+                        time=int(template.beat_duration_ticks * i * step)
                     ),
                     Message(
                         'note_off',
                         note=note,
                         velocity=velocity,
-                        time=int(second2tick(
-                            60 / tempo * (i + duration) * step,
-                            TICKS_PER_BEAT,
-                            bpm2tempo(tempo)
-                        ))
+                        time=int(template.beat_duration_ticks * (i + duration) * step)
                     )
                 ]
             ]

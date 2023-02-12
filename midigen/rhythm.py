@@ -37,8 +37,16 @@ def four_on_the_floor(
     return measure([click, None, None, None] * 4, tempo=tempo, velocity=velocity)
 
 
-def straight_16th(
+def straight_16ths(
     click=[NOTES['Hi-Hat Closed']],
+    tempo=90,
+    velocity=127
+):
+    return measure([click, None] * 8, tempo=tempo, velocity=velocity)
+
+
+def straight_8ths(
+    click=[NOTES['Ride Cymbal']],
     tempo=90,
     velocity=127
 ):

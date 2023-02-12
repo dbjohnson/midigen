@@ -6,6 +6,7 @@ import mido
 from midigen.keys import Key
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
+from midigen.humanize import randomize, add_swing
 from midigen import rhythm
 
 
@@ -23,13 +24,6 @@ def main():
         required=True,
         help='Chords to generate (Cmaj7, Dm7, etc. or ii, V7, Imaj7, etc.)',
         nargs='+'
-    )
-
-    parser.add_argument(
-        '-r',
-        '--rhythm',
-        type=str,
-        help='Canned rhythm to use',
     )
 
     parser.add_argument(
@@ -64,36 +58,66 @@ def main():
         help='play the chord progression'
     )
 
+    parser.add_argument(
+        '-s',
+        '--swing',
+        default=0.1,
+        type=float,
+        help='swing amount (0-1)'
+    )
+
+    parser.add_argument(
+        '-r',
+        '--randomize',
+        default=0.01,
+        type=float,
+        help='randomize amount (0-1)'
+    )
+
     args = parser.parse_args()
 
+    def humanize(measure):
+        return randomize(
+            add_swing(
+                measure,
+                args.swing
+            ),
+            args.randomize
+        )
+
     chords = Track.from_measures([
-        Measure.from_pattern(
+        humanize(Measure.from_pattern(
             pattern=[
                 Key.parse_chord(args.key + chord)
             ] * 4,
             time_signature=TimeSignature(4, 4),
             tempo=args.tempo,
             velocity=90
-        )
+        ))
         for chord in args.chords
     ],
         channel=1,
         name='chords',
     )
 
-    beat = Track.from_measures([
-        pattern(
-            tempo=args.tempo,
-            velocity=127,
+    beat = Track.string_tracks([
+        Track.from_measures([
+            humanize(
+                pattern(
+                    tempo=args.tempo,
+                    velocity=127,
+                )
+            )
+            for pattern in (
+                rhythm.four_on_the_floor,
+                rhythm.son_clave,
+                rhythm.straight_16ths
+            )
+        ],
+            stack=True
         )
-        for pattern in (
-            rhythm.four_on_the_floor,
-            rhythm.son_clave,
-            rhythm.straight_16th
-        )
-    ],
-        stack=True
-    ).loop(len(args.chords))
+        for _ in range(len(args.chords))
+    ])
 
     song = Song([beat, chords])
 
