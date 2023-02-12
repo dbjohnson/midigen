@@ -14,6 +14,7 @@ jobs:
           python-version: '3.9'
       - name: Install dependencies
         run: |
+          sudo apt-get install libasound2-dev
           python -m pip install --upgrade pip
           pip install flake8 pytest pip-tools build twine
           pip-compile
