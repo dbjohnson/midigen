@@ -125,10 +125,11 @@ class Key:
         ), match['ext']
 
     @staticmethod
-    def parse_chord(chord: str):
+    def parse_chord(chord: str, match_voicing: List[int] = None):
         key, ext = Key.parse(chord)
         return key.chord(
-            list(range(7, int(ext or '5') + 1, 2))
+            list(range(7, int(ext or '5') + 1, 2)),
+            match_voicing=match_voicing
         )
 
     def chord(

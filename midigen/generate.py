@@ -7,7 +7,7 @@ import mido
 from midigen.keys import Key
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
-from midigen.humanize import randomize, add_swing
+from midigen.humanize import randomize_time, randomize_velocity, swing, pulse
 from midigen import rhythm
 
 
@@ -62,7 +62,7 @@ def main():
     parser.add_argument(
         '-s',
         '--swing',
-        default=0.1,
+        default=0.03,
         type=float,
         help='swing amount (0-1)'
     )
@@ -70,7 +70,7 @@ def main():
     parser.add_argument(
         '-r',
         '--randomize',
-        default=0.01,
+        default=0.001,
         type=float,
         help='randomize amount (0-1)'
     )
@@ -83,13 +83,15 @@ def main():
     )
 
     args = parser.parse_args()
-    print(args)
 
     def humanize(measure):
-        return randomize(
-            add_swing(
-                measure,
-                args.swing
+        return randomize_velocity(
+            randomize_time(
+                swing(
+                    pulse(measure),
+                    args.swing
+                ),
+                args.randomize
             ),
             args.randomize
         )
@@ -97,7 +99,7 @@ def main():
     beat = Track.string_tracks([
         Track.from_measures([
             pattern(
-                velocity=127,
+                velocity=90,
             ).mutate(humanize)
             for pattern in (
                 rhythm.four_on_the_floor,
@@ -124,7 +126,7 @@ def main():
                 )
             ],
             time_signature=TimeSignature(4, 4),
-            velocity=80
+            velocity=90
         ).mutate(humanize)
         for chord in args.chords
     ],
@@ -135,14 +137,18 @@ def main():
     chords = Track.from_measures([
         Measure.from_pattern(
             pattern=[
-                Key.parse_chord(args.key + chord)
+                Key.parse_chord(
+                    args.key + chord,
+                    # keep chords close to the key's root triad
+                    match_voicing=Key.parse_chord(args.key)
+                )
             ] * 4,
             time_signature=TimeSignature(4, 4),
-            velocity=70
+            velocity=60,
         ).mutate(humanize)
         for chord in args.chords
     ],
-        channel=2,
+        channel=1,
         name='chords',
     )
 
@@ -157,7 +163,7 @@ def main():
                 )
             ],
             time_signature=TimeSignature(4, 4),
-            velocity=70
+            velocity=90
         ).mutate(humanize)
         for chord in args.chords
     ],
@@ -165,7 +171,7 @@ def main():
         name='melody',
     )
     song = Song([
-        beat, chords.stack(melody), bass
+        beat, bass, chords, melody
     ]).loop(args.loop)
 
     if args.output:
