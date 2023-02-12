@@ -1,4 +1,5 @@
 import argparse
+import random
 import time
 
 import mido
@@ -74,7 +75,15 @@ def main():
         help='randomize amount (0-1)'
     )
 
+    parser.add_argument(
+        '-n',
+        '--name',
+        default='midigen',
+        help='midi port name'
+    )
+
     args = parser.parse_args()
+    print(args)
 
     def humanize(measure):
         return randomize(
@@ -85,25 +94,9 @@ def main():
             args.randomize
         )
 
-    chords = Track.from_measures([
-        Measure.from_pattern(
-            pattern=[
-                Key.parse_chord(args.key + chord)
-            ] * 4,
-            time_signature=TimeSignature(4, 4),
-            tempo=args.tempo,
-            velocity=90
-        ).mutate(humanize)
-        for chord in args.chords
-    ],
-        channel=1,
-        name='chords',
-    )
-
     beat = Track.string_tracks([
         Track.from_measures([
             pattern(
-                tempo=args.tempo,
                 velocity=127,
             ).mutate(humanize)
             for pattern in (
@@ -112,7 +105,9 @@ def main():
                 rhythm.straight_16ths
             )
         ],
-            stack=True
+            channel=9,
+            stack=True,
+            name='beat'
         )
         for _ in range(len(args.chords))
     ])
@@ -120,29 +115,67 @@ def main():
     bass = Track.from_measures([
         Measure.from_pattern(
             pattern=[
-                [n.value - 24 if n.value >= 24 else n.value]
+                [k.note(degree).value - 24]
                 for k in [Key.parse(args.key + chord)[0]]
-                for n in [k.note(degree) for degree in (1, 3, 5, 1)]
+                # always play root or 5th an downbeat
+                for degree in random.choices([1, 1, 1, 5], k=1) + random.choices(
+                    [1, 1, 2, 5, 5, 5, 7],
+                    k=3
+                )
             ],
             time_signature=TimeSignature(4, 4),
-            tempo=args.tempo,
-            velocity=90
+            velocity=80
         ).mutate(humanize)
         for chord in args.chords
     ],
-        channel=1,
+        channel=0,
         name='bass',
     )
 
-    song = Song([beat, chords, bass])
+    chords = Track.from_measures([
+        Measure.from_pattern(
+            pattern=[
+                Key.parse_chord(args.key + chord)
+            ] * 4,
+            time_signature=TimeSignature(4, 4),
+            velocity=70
+        ).mutate(humanize)
+        for chord in args.chords
+    ],
+        channel=2,
+        name='chords',
+    )
 
-    if args.play:
-        port = mido.open_output('midigen', virtual=True)
-        time.sleep(2)
-        song.loop(port, args.loop)
+    melody = Track.from_measures([
+        Measure.from_pattern(
+            pattern=[
+                [k.note(degree).value + 12] if degree else None
+                for k in [Key.parse(args.key + chord)[0]]
+                for degree in random.choices(
+                    [1, 3, 5, 7] + [None] * 4,
+                    k=8
+                )
+            ],
+            time_signature=TimeSignature(4, 4),
+            velocity=70
+        ).mutate(humanize)
+        for chord in args.chords
+    ],
+        channel=2,
+        name='melody',
+    )
+    song = Song([
+        beat, chords.stack(melody), bass
+    ]).loop(args.loop)
 
     if args.output:
-        song.to_midi(args.output)
+        song.to_midi(args.output, tempo=args.tempo)
+
+    if args.play:
+        port = mido.open_output(args.name, virtual=True)
+        time.sleep(2)
+        port.panic()  # clear anything that was previous playing
+        song.play(port, args.tempo)
 
 
 if __name__ == '__main__':
