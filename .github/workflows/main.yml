@@ -4,8 +4,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-    matrix:
-      python-version: ["3.9"]
+      matrix:
+        python-version: ["3.9"]
     environment: pypi
     steps:
       - uses: actions/checkout@v3
