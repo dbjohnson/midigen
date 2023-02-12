@@ -6,6 +6,11 @@
 
 Python library for generating simple chord progression midi files
 
+## Installation
+```cmd
+pip install midigen
+```
+
 ## Example usage
 ### Command line
 

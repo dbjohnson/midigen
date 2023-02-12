@@ -1,23 +1,21 @@
-name: tests 
-on: [push]
+name: publish to pypi
+on:
+  push:
+    branches: [ main ]
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9"]
     environment: pypi
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.9'
       - name: Install dependencies
         run: |
-          sudo apt-get install libasound2-dev
           python -m pip install --upgrade pip
-          pip install flake8 pytest build twine pip-tools
+          pip install flake8 pytest pip-tools build twine
           pip-compile
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
@@ -29,3 +27,12 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
+      - name: Build & check
+        run: |
+          python -m build
+          twine check dist/*
+      - name: Publish package
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
