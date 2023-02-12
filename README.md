@@ -1,6 +1,6 @@
 # midigen
 [![License](https://img.shields.io/github/license/dbjohnson/midigen.svg)]()
-[![PyPi](https://img.shields.io/pypi/v/midigen.svg)](https://pypi.python.org/pypi/looptimer)
+[![PyPi](https://img.shields.io/pypi/v/midigen.svg)](https://pypi.python.org/pypi/midigen)
 ![GHA](https://github.com/dbjohnson/midigen/actions/workflows/tests.yml/badge.svg)
 
 
