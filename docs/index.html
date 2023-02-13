@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <link rel="stylesheet"
       href="https://cifkao.github.io/html-midi-player/assets/css/style.css">
     <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark-dimmed.min.css">
   </head>
   <body>
-    <div style="width:40%;margin:auto">
+    <div style="width:60%;margin:auto">
       <h1>midigen</h1>
-      <h4>Easily generate midi sequences with matched chord voicings and humanization</h4>
+      <p>Easily generate simple midi backing tracks with matched chord voicings and humanization</p>
 
       <b>example output</b>
       <main id="content" class="main-content" role="main">
@@ -23,12 +23,13 @@
           <midi-visualizer type="piano-roll" id="mainVisualizer" src="/midigen/demo.mid"></midi-visualizer>
           <midi-player src="/midigen/demo.mid" sound-font="" visualizer="#mainVisualizer" id="mainPlayer" loop>
         </div>
-        <a href="https://github.com/cifkao/html-midi-player">Check out html-midi-player on GitHub</a>
+        <div style="font-size:10pt">
+          <a href="https://github.com/cifkao/html-midi-player">Check out html-midi-player on GitHub</a>
+        </div>
       </main>
       <b>cmd line tool</b>
-      <pre><code class="bash">midigen -key C --chords ii9 V7 I7 vi7 --loop 5</code></pre>
-      <b>python</b>
-      <pre><code class="python">import mido
+      <pre><code class="Bash">python midigen/generate.py --key C --chords ii9 V7 I9 vi7 --loop 5 --tempo 90 --swing 0.05 -o ii-V-i-vi.mid</code></pre>
+      <pre><code class="Python">import mido
 from midigen.notes import Note
 from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, Measure

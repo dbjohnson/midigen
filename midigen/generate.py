@@ -142,46 +142,26 @@ def main():
 
     chords = Track.from_measures([
         Measure.from_pattern(
-            pattern=[
-                Key.parse_chord(
-                    args.key + chord,
-                    # keep chords close to the key's root triad
-                    match_voicing=Key.parse_chord(args.key)
-                )
-            ] * 4,
+            pattern=[voicing] * 4,
             time_signature=TimeSignature(4, 4),
             velocity=60,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
         for chord in args.chords
+        for voicing in [Key.parse_chord(
+            args.key + chord,
+            # keep chords close to the key's root triad
+            match_voicing=Key.parse_chord(args.key)
+        )[1:]]  # drop root
+
     ],
         channel=1,
         name='chords',
     )
 
-    melody = Track.from_measures([
-        Measure.from_pattern(
-            pattern=[
-                [k.note(degree).value + 12] if degree else None
-                for k in [Key.parse(args.key + chord)[0]]
-                for degree in random.choices(
-                    [1, 2, 3, 5, 7] + [None] * 2,
-                    k=8
-                )
-            ],
-            time_signature=TimeSignature(4, 4),
-            velocity=90,
-            duration=0.99
-        ).mutate(humanize)
-        for _ in range(args.loop)
-        for chord in args.chords
-    ],
-        channel=2,
-        name='melody',
-    )
     song = Song([
-        beat, bass, chords, melody
+        beat, bass, chords
     ])
 
     if args.output:
