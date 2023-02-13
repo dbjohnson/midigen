@@ -6,7 +6,7 @@
 
 Python library for generating simple chord progression midi files
 
-[demo](https://dbjohson.github.io/midigen)
+[demo](https://dbjohnson.github.io/midigen/)
 
 ## Installation
 ```cmd
