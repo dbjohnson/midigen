@@ -34,7 +34,7 @@ class Measure:
         pattern: List[List[int]],
         time_signature: TimeSignature = TimeSignature(4, 4),
         velocity: int = 127,
-        duration: float = 0.99,
+        duration: float = 0.5,
     ):
         """
         Generate a one measure sequence of notes; the pattern

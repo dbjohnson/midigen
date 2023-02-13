@@ -8,7 +8,9 @@ from midigen.keys import Key
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
 from midigen.humanize import randomize_time, randomize_velocity, swing, pulse
+from midigen.instruments import INSTRUMENTS
 from midigen import rhythm
+
 
 
 def main():
@@ -111,6 +113,7 @@ def main():
             stack=True,
             name='beat'
         )
+        for _ in range(args.loop)
         for _ in range(len(args.chords))
     ])
 
@@ -119,18 +122,21 @@ def main():
             pattern=[
                 [k.note(degree).value - 24]
                 for k in [Key.parse(args.key + chord)[0]]
-                # always play root or 5th an downbeat
-                for degree in random.choices([1, 1, 1, 5], k=1) + random.choices(
-                    [1, 1, 2, 5, 5, 5, 7],
+                # always play root downbeat
+                for degree in random.choices([1,], k=1) + random.choices(
+                    [1, 2, 3, 5, 7],
                     k=3
                 )
             ],
             time_signature=TimeSignature(4, 4),
-            velocity=90
+            velocity=120,
+            duration=0.7
         ).mutate(humanize)
+        for _ in range(args.loop)
         for chord in args.chords
     ],
         channel=0,
+        program=INSTRUMENTS['Acoustic Bass'],
         name='bass',
     )
 
@@ -145,7 +151,9 @@ def main():
             ] * 4,
             time_signature=TimeSignature(4, 4),
             velocity=60,
+            duration=0.7
         ).mutate(humanize)
+        for _ in range(args.loop)
         for chord in args.chords
     ],
         channel=1,
@@ -158,13 +166,15 @@ def main():
                 [k.note(degree).value + 12] if degree else None
                 for k in [Key.parse(args.key + chord)[0]]
                 for degree in random.choices(
-                    [1, 3, 5, 7] + [None] * 4,
+                    [1, 2, 3, 5, 7] + [None] * 2,
                     k=8
                 )
             ],
             time_signature=TimeSignature(4, 4),
-            velocity=90
+            velocity=90,
+            duration=0.99
         ).mutate(humanize)
+        for _ in range(args.loop)
         for chord in args.chords
     ],
         channel=2,
@@ -172,7 +182,7 @@ def main():
     )
     song = Song([
         beat, bass, chords, melody
-    ]).loop(args.loop)
+    ])
 
     if args.output:
         song.to_midi(args.output, tempo=args.tempo)

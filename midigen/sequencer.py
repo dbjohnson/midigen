@@ -15,28 +15,32 @@ class Track:
         name: str = 'midigen',
         duration_ticks: int = 0,
         messages: List[Message] = [],
-        channel: int = 0
+        channel: int = 0,
+        program: int = 0
     ):
         self.name = name
         self.duration_ticks = duration_ticks
         self.messages = sorted(messages, key=lambda m: m.time)
         self.channel = channel
+        self.program = program
 
     @staticmethod
     def from_measures(
         measures: List[Measure],
         channel: int = 0,
+        program: int = 0,
         name: str = 'midigen',
         stack: bool = False
     ):
-        t = Track(name=name, channel=channel)
+        t = Track(name=name, channel=channel, program=program)
         for measure in measures:
             merge_method = t.stack if stack else t.append
             t = merge_method(Track(
                 name,
                 measure.duration_ticks,
                 measure.messages,
-                channel
+                channel,
+                program
             ))
         return t
 
@@ -67,7 +71,8 @@ class Track:
                 msg.copy(time=msg.time + offs_ticks)
                 for msg in self.messages
             ],
-            channel=self.channel
+            channel=self.channel,
+            program=self.program
         )
 
     def shift_pitch(self, offs: int):
@@ -78,7 +83,8 @@ class Track:
                 msg.copy(note=msg.note + offs)
                 for msg in self.messages
             ],
-            channel=self.channel
+            channel=self.channel,
+            program=self.program
         )
 
     def append(self, other: 'Track'):
@@ -87,7 +93,8 @@ class Track:
             self.name,
             self.duration_ticks + other.duration_ticks,
             self.messages + shifted.messages,
-            self.channel
+            channel=self.channel,
+            program=self.program
         )
 
     def stack(self, other: 'Track'):
@@ -95,7 +102,8 @@ class Track:
             self.name,
             max(self.duration_ticks, other.duration_ticks),
             self.messages + other.messages,
-            self.channel
+            channel=self.channel,
+            program=self.program
         )
 
     def loop(self, n: int):
@@ -112,7 +120,11 @@ class Track:
     def to_midi_track(self):
         track = MidiTrack()
         track.append(MetaMessage('track_name', name=self.name))
-        track.append(Message('program_change', channel=self.channel))
+        track.append(Message(
+            'program_change',
+            channel=self.channel,
+            program=self.program
+        ))
         sorted_msgs = sorted(
             [m.copy(channel=self.channel) for m in self.messages],
             key=lambda msg: msg.time

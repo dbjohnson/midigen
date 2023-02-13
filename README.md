@@ -33,7 +33,7 @@ from midigen.sequencer import Song, Track, play_notes
 port = mido.open_output('midigen', virtual=True)
 
 # C major scale
-Key(Note.C, Mode.Major).to_track(tempo=200).play(port)
+Key(Note.C, Mode.Major).to_track().play(port)
 
 # A simple chord progression
 key = Key(Note.C, Mode.Major)
@@ -51,7 +51,6 @@ chords = Track.from_measures([
             )
         ] * time_signature.numerator,
         time_signature=time_signature,
-        tempo=tempo,
         velocity=90
     )
     for degree in progression
@@ -68,7 +67,6 @@ melody = Track.from_measures([
             None
         ],
         time_signature=time_signature,
-        tempo=tempo,
         velocity=80
     )
     for degree in progression

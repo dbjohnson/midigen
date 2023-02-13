@@ -42,7 +42,7 @@ def straight_16ths(
 
 
 def son_clave(
-    click=[DRUM_NOTES['Floor Tom 1']],
+    click=[DRUM_NOTES['Snare Cross Stick']],
     velocity=127
 ):
     return measure([
