@@ -19,19 +19,35 @@ def swing(measure: Measure, swing: float = 0.1):
     )
 
 
-def randomize_time(measure: Measure, beat_frac: float = 0.001):
-    def randomized(msg):
-        return max(
-            0,
-            int(msg.time + random.normalvariate(0, beat_frac * TICKS_PER_BEAT))
+def randomize_time(measure: Measure, beat_frac: float = 0.01):
+    """
+    Randomize time; on/off message pairs must be shifted by the same amount
+    """
+    on_msgs = [msg for msg in measure.messages if msg.type == 'note_on']
+    off_msgs = [msg for msg in measure.messages if msg.type == 'note_off']
+    other_messages = [msg for msg in measure.messages if msg not in on_msgs + off_msgs]
+
+    randomized = []
+    for on_msg in on_msgs:
+        offs = int(random.normalvariate(0, beat_frac * TICKS_PER_BEAT))
+        randomized.append(
+            on_msg.copy(time=max(0, on_msg.time + offs))
         )
+        try:
+            matched_off = next(
+                off_msg
+                for off_msg in off_msgs
+                if off_msg.note == on_msg.note and off_msg.time >= on_msg.time
+            )
+            randomized.append(
+                matched_off.copy(time=max(0, matched_off.time + offs))
+            )
+        except StopIteration:
+            pass
 
     return Measure(
         measure.time_signature,
-        [
-            msg.copy(time=randomized(msg))
-            for msg in measure.messages
-        ],
+        sorted(randomized + other_messages, key=lambda msg: msg.time)
     )
 
 
@@ -54,7 +70,7 @@ def randomize_velocity(measure: Measure, frac: float = 0.01):
     )
 
 
-def pulse(measure: Measure, even: bool = True, ducking: float = 0.2):
+def pulse(measure: Measure, even: bool = True, ducking: float = 0.1):
     def pulsed(msg):
         beat, frac = divmod(msg.time, TICKS_PER_BEAT)
         frac /= TICKS_PER_BEAT
