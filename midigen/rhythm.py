@@ -2,52 +2,47 @@
 Helper functions / examples for basic rhyhm patterns
 """
 from typing import List
-from pkg_resources import resource_stream
 
 from midigen.time import TimeSignature, Measure
-
-
-with resource_stream("midigen", "percussion_map.csv") as fh:
-    NOTES = {
-        key: int(value)
-        for row in fh.read().decode().strip().split('\n')[1:]
-        for (key, value) in [row.split(',')]
-    }
+from midigen.instruments import DRUM_NOTES
 
 
 def measure(
     pattern: List[List[int]],
-    tempo: float = 90,
     velocity: int = 127,
     time_signature: TimeSignature = TimeSignature(4, 4)
 ):
     return Measure.from_pattern(
         pattern=pattern,
         time_signature=time_signature,
-        tempo=tempo,
         velocity=velocity,
+        duration=0.1
     )
 
 
 def four_on_the_floor(
-    click=[NOTES['Kick Drum']],
-    tempo=90,
+    click=[DRUM_NOTES['Kick Drum']],
     velocity=127
 ):
-    return measure([click, None, None, None] * 4, tempo=tempo, velocity=velocity)
+    return measure([click, None, None, None] * 4, velocity=velocity)
 
 
-def straight_16th(
-    click=[NOTES['Hi-Hat Closed']],
-    tempo=90,
+def straight_8ths(
+    click=[DRUM_NOTES['Hi-Hat Closed']],
     velocity=127
 ):
-    return measure([click] * 16, tempo=tempo, velocity=velocity)
+    return measure([click, None] * 8, velocity=velocity)
+
+
+def straight_16ths(
+    click=[DRUM_NOTES['Hi-Hat Closed']],
+    velocity=127
+):
+    return measure([click] * 16, velocity=velocity)
 
 
 def son_clave(
-    click=[NOTES['Floor Tom 1']],
-    tempo=90,
+    click=[DRUM_NOTES['Snare Cross Stick']],
     velocity=127
 ):
     return measure([
@@ -55,12 +50,11 @@ def son_clave(
         None, None, click, None,
         None, None, click, None,
         click, None, None, None
-    ], tempo=tempo, velocity=velocity)
+    ], velocity=velocity)
 
 
 def rumba_clave(
-    click=[NOTES['Floor Tom 1']],
-    tempo=90,
+    click=[DRUM_NOTES['Floor Tom 1']],
     velocity=127
 ):
     return measure([
@@ -68,12 +62,11 @@ def rumba_clave(
         None, None, None, click,
         None, None, click, None,
         click, None, None, None
-    ], tempo=tempo, velocity=velocity)
+    ], velocity=velocity)
 
 
 def brushes(
-    click=[NOTES['Snare Cross Stick']],
-    tempo=90,
+    click=[DRUM_NOTES['Snare Cross Stick']],
     velocity=40
 ):
     return measure([
@@ -81,4 +74,4 @@ def brushes(
         click, None, None, click,
         click, None, None, click,
         click, None, None, click,
-    ], tempo=tempo, velocity=velocity)
+    ], velocity=velocity)

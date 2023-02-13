@@ -1,6 +1,6 @@
 from typing import List
 
-from mido import Message, second2tick, bpm2tempo
+from mido import Message
 
 
 TICKS_PER_BEAT = 480
@@ -20,26 +20,21 @@ class Measure:
     def __init__(
         self,
         time_signature: TimeSignature = TimeSignature(4, 4),
-        tempo: float = 120,
         messages: List[Message] = []
     ):
         self.time_signature = time_signature
-        self.tempo = tempo
         self.messages = messages
-        self.duration_secs = 60 / self.tempo * time_signature.numerator
-        self.duration_ticks = int(second2tick(
-            self.duration_secs,
-            TICKS_PER_BEAT,
-            bpm2tempo(tempo)
-        ))
+        self.duration_ticks = TICKS_PER_BEAT * time_signature.numerator
+
+    def mutate(self, msg_mutator: callable):
+        return msg_mutator(self)
 
     @staticmethod
     def from_pattern(
         pattern: List[List[int]],
         time_signature: TimeSignature = TimeSignature(4, 4),
-        tempo: float = 120,
         velocity: int = 127,
-        duration: float = 0.99,
+        duration: float = 0.5,
     ):
         """
         Generate a one measure sequence of notes; the pattern
@@ -47,11 +42,10 @@ class Measure:
         """
         # ensure pattern is a multiple of the time signature
         assert len(pattern) % time_signature.numerator == 0
-        step = time_signature.numerator / len(pattern)
+        step = time_signature.numerator / len(pattern) * TICKS_PER_BEAT
 
         return Measure(
             time_signature=time_signature,
-            tempo=tempo,
             messages=[
                 msg
                 for i, notes in enumerate(pattern)
@@ -62,21 +56,13 @@ class Measure:
                         'note_on',
                         note=note,
                         velocity=velocity,
-                        time=int(second2tick(
-                            60 / tempo * i * step,
-                            TICKS_PER_BEAT,
-                            bpm2tempo(tempo)
-                        ))
+                        time=int(i * step)
                     ),
                     Message(
                         'note_off',
                         note=note,
                         velocity=velocity,
-                        time=int(second2tick(
-                            60 / tempo * (i + duration) * step,
-                            TICKS_PER_BEAT,
-                            bpm2tempo(tempo)
-                        ))
+                        time=int((i + duration) * step)
                     )
                 ]
             ]

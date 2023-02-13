@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.5.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <link rel="stylesheet"
+      href="https://cifkao.github.io/html-midi-player/assets/css/style.css">
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
+    <link rel="stylesheet" "/style.css">
+  </head>
+  <body>
+    <div style="width:40%;margin:auto">
+      <h1>midigen</h1>
+      <h4>Easily generate midi sequences with matched chord voicings and humanization</h4>
+
+      <b>example output</b>
+      <main id="content" class="main-content" role="main">
+        <div>
+          <midi-visualizer type="piano-roll" id="mainVisualizer" src="/demo.mid"></midi-visualizer>
+          <midi-player src="/demo.mid" sound-font="" visualizer="#mainVisualizer" id="mainPlayer" loop>
+        </div>
+        <a href="https://github.com/cifkao/html-midi-player">Check out html-midi-player on GitHub</a>
+      </main>
+      <b>cmd line tool</b>
+      <pre><code class="bash">midigen -key C --chords ii9 V7 I7 vi7 --loop 5</code></pre>
+      <b>python</b>
+      <pre><code class="python">import mido
+from midigen.notes import Note
+from midigen.keys import Key, Mode
+from midigen.time import TimeSignature, Measure
+from midigen.sequencer import Song, Track, play_notes
+
+
+port = mido.open_output('midigen', virtual=True)
+
+# C major scale
+Key(Note.C, Mode.Major).to_track().play(port)
+
+# A simple chord progression
+key = Key(Note.C, Mode.Major)
+time_signature = TimeSignature(4, 4)
+tempo = 90
+progression = [2, 5, 1, 6]
+
+chords = Track.from_measures([
+    Measure.from_pattern(
+        pattern=[
+            key.relative_key(degree).chord(
+                [7],
+                # pick a voicing close to the root triad
+                match_voicing=key.triad()
+            )
+        ] * time_signature.numerator,
+        time_signature=time_signature,
+        velocity=90
+    )
+    for degree in progression
+], name='chords')
+chords.play(port)
+
+# Write the song to MIDI file
+Song([chords]).to_midi('example.mid')</code></pre>
+    </div>
+  </body>
+</html>
