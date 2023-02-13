@@ -1,3 +1,4 @@
+import os
 import argparse
 import random
 import time
@@ -81,6 +82,14 @@ def main():
         '--name',
         default='midigen',
         help='midi port name'
+    )
+
+    parser.add_argument(
+        '-a',
+        '--ableton',
+        default=False,
+        action='store_true',
+        help='open ableton for playback (macOS only)',
     )
 
     args = parser.parse_args()
@@ -167,6 +176,8 @@ def main():
         song.to_midi(args.output, tempo=args.tempo)
 
     if args.play:
+        if args.ableton:
+            os.system(f'open "{os.path.join(os.path.dirname(__file__), "midigen.als")}"')
         port = mido.open_output(args.name, virtual=True)
         time.sleep(2)
         port.panic()  # clear anything that was previous playing
