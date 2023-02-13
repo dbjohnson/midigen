@@ -154,7 +154,7 @@ class Song:
 
     def play(self, port: BaseOutput, tempo: int = 90, block: bool = True):
         for i, track in enumerate(self.tracks):
-            track.play(port)
+            track.play(port, tempo)
 
         if block:
             time.sleep(max([
