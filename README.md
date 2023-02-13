@@ -27,15 +27,16 @@ import mido
 from midigen.notes import Note
 from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, Measure
-from midigen.sequencer import Song, Track, play_notes
+from midigen.sequencer import Song, Track
 
 
+# open new midi port via mido
 port = mido.open_output('midigen', virtual=True)
 
-# C major scale
-Key(Note.C, Mode.Major).to_track().play(port)
+# play C minor scale
+Key(Note.C, Mode.Minor).to_track().play(port)
 
-# A simple chord progression
+# make a simple ii V I vi chord progression in the key of C
 key = Key(Note.C, Mode.Major)
 time_signature = TimeSignature(4, 4)
 tempo = 90
@@ -45,7 +46,8 @@ chords = Track.from_measures([
     Measure.from_pattern(
         pattern=[
             key.relative_key(degree).chord(
-                [7],
+                # default chords are the base triad - try adding extensions
+                extensions=[7],
                 # pick a voicing close to the root triad
                 match_voicing=key.triad()
             )
@@ -54,31 +56,11 @@ chords = Track.from_measures([
         velocity=90
     )
     for degree in progression
-], name='chords')
-chords.play(port)
+])
 
-# A simple melody
-melody = Track.from_measures([
-    Measure.from_pattern(
-        pattern=[
-            [key.note(degree).value],
-            [key.note(degree + 2).value],
-            [key.note(degree + 5).value],
-            None
-        ],
-        time_signature=time_signature,
-        velocity=80
-    )
-    for degree in progression
-], name='melody')
-melody.play(port)
+# play to port
+chords.play(port, tempo=tempo)
 
-# Stack the melody and chords in a single track
-chords.stack(melody).play(port)
-
-# Or use the Song class to play multiple tracks
-Song([chords, melody]).play(port)
-
-# Write the song to a MIDI file
-Song([chords, melody]).to_midi('example.mid')
+# write the song to a MIDI file
+Song([chords]).to_midi('midigen.mid', tempo=tempo)</code></pre>
 ```

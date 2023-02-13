@@ -36,15 +36,16 @@
 from midigen.notes import Note
 from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, Measure
-from midigen.sequencer import Song, Track, play_notes
+from midigen.sequencer import Song, Track
 
 
+# open new midi port via mido
 port = mido.open_output('midigen', virtual=True)
 
-# C major scale
-Key(Note.C, Mode.Major).to_track().play(port)
+# play C minor scale
+Key(Note.C, Mode.Minor).to_track().play(port)
 
-# A simple chord progression
+# make a simple ii V I vi chord progression in the key of C
 key = Key(Note.C, Mode.Major)
 time_signature = TimeSignature(4, 4)
 tempo = 90
@@ -54,6 +55,7 @@ chords = Track.from_measures([
     Measure.from_pattern(
         pattern=[
             key.relative_key(degree).chord(
+                # default chords are the base triad - try adding extensions
                 extensions=[7],
                 # pick a voicing close to the root triad
                 match_voicing=key.triad()
@@ -63,13 +65,13 @@ chords = Track.from_measures([
         velocity=90
     )
     for degree in progression
-], name='chords')
+])
 
 # play to port
-chords.play(port)
+chords.play(port, tempo=tempo)
 
-# Write the song to MIDI file
-Song([chords]).to_midi('example.mid')</code></pre>
+# write the song to a MIDI file
+Song([chords]).to_midi('midigen.mid', tempo=tempo)</code></pre>
     </div>
   </body>
 </html>
