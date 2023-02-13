@@ -5,4 +5,5 @@ src/*
 midigen.egg-info
 output.mid
 requirements.txt
-ableton/template Project/Backup*
+docs/ableton/template Project/Backup*
+
