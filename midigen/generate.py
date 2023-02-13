@@ -12,7 +12,6 @@ from midigen.instruments import INSTRUMENTS
 from midigen import rhythm
 
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -124,7 +123,7 @@ def main():
                 [Key.parse(args.key + chord)[0].note(degree).value - 24]
                 # always play root downbeat
                 for degree in [1] + random.choices(
-                    [1, 2, 3, 5, 7],
+                    [2, 3, 5, 7],
                     k=3
                 )
             ],

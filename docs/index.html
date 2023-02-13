@@ -10,25 +10,28 @@
     <link rel="stylesheet"
       href="https://cifkao.github.io/html-midi-player/assets/css/style.css">
     <link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark-dimmed.min.css">
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+    <link rel="stylesheet" href="style.css"
   </head>
   <body>
-    <div style="width:60%;margin:auto">
+    <a href="https://github.com/dbjohnson/midigen" target="_blank" title="Fork me on github">
+      <img src="github.svg" style="height:50px;float:left" alt="Fork me on github">
+    </a>
+    <div style="width:80%;margin:auto">
       <h1>midigen</h1>
-      <p>Easily generate simple midi backing tracks with matched chord voicings and humanization</p>
+      <p>Easily generate simple midi backing tracks with matched chord voicings and basic humanization</p>
 
-      <b>example output</b>
-      <main id="content" class="main-content" role="main">
-        <div>
-          <midi-visualizer type="piano-roll" id="mainVisualizer" src="/midigen/demo.mid"></midi-visualizer>
-          <midi-player src="/midigen/demo.mid" sound-font="" visualizer="#mainVisualizer" id="mainPlayer" loop>
-        </div>
-        <div style="font-size:10pt">
-          <a href="https://github.com/cifkao/html-midi-player">Check out html-midi-player on GitHub</a>
-        </div>
-      </main>
-      <b>cmd line tool</b>
+      <h3>example output</h3>
+      <div>
+        <midi-visualizer type="piano-roll" id="mainVisualizer" src="demo.mid"></midi-visualizer>
+        <midi-player src="demo.mid" sound-font="" visualizer="#mainVisualizer" id="mainPlayer" loop>
+      </div>
+      <div style="font-size:10pt;float:right">
+        <a href="https://github.com/cifkao/html-midi-player">html-midi-player</a>
+      </div>
+      <h3>command line tool</h3>
       <pre><code class="Bash">midigen --key C --chords ii9 V7 I9 vi7 --loop 5 --tempo 90 --swing 0.05 -o ii-V-i-vi.mid</code></pre>
+      <h3>python</h3>
       <pre><code class="Python">import mido
 from midigen.notes import Note
 from midigen.keys import Key, Mode
@@ -51,7 +54,7 @@ chords = Track.from_measures([
     Measure.from_pattern(
         pattern=[
             key.relative_key(degree).chord(
-                [7],
+                extensions=[7],
                 # pick a voicing close to the root triad
                 match_voicing=key.triad()
             )
@@ -61,6 +64,8 @@ chords = Track.from_measures([
     )
     for degree in progression
 ], name='chords')
+
+# play to port
 chords.play(port)
 
 # Write the song to MIDI file
