@@ -5,3 +5,7 @@
   border-radius: 0.5em;
   background: #f7f7f7;
 }
+
+img {
+  vertical-align: middle
+}
