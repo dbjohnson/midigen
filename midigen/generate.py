@@ -120,10 +120,10 @@ def main():
     bass = Track.from_measures([
         Measure.from_pattern(
             pattern=[
-                [k.note(degree).value - 24]
-                for k in [Key.parse(args.key + chord)[0]]
+                # parse relative key from base key + chord; subtract two octaves
+                [Key.parse(args.key + chord)[0].note(degree).value - 24]
                 # always play root downbeat
-                for degree in random.choices([1,], k=1) + random.choices(
+                for degree in [1] + random.choices(
                     [1, 2, 3, 5, 7],
                     k=3
                 )

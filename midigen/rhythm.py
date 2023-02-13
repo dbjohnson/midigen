@@ -54,7 +54,7 @@ def son_clave(
 
 
 def rumba_clave(
-    click=[DRUM_NOTES['Floor Tom 1']],
+    click=[DRUM_NOTES['Snare Cross Stick']],
     velocity=127
 ):
     return measure([
