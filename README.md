@@ -62,5 +62,5 @@ chords = Track.from_measures([
 chords.play(port, tempo=tempo)
 
 # write the song to a MIDI file
-Song([chords]).to_midi('midigen.mid', tempo=tempo)</code></pre>
+Song([chords]).to_midi('midigen.mid', tempo=tempo)
 ```
