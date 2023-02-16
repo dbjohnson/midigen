@@ -71,7 +71,6 @@ class Key:
         self,
         velocity: int = 127,
         duration: float = 1.0,
-        tempo: float = 180
     ):
         """
         Generate an ascending scale track
@@ -85,7 +84,6 @@ class Key:
                     )
                 ],
                 time_signature=TimeSignature(8, 4),
-                tempo=tempo,
                 velocity=velocity,
                 duration=duration
             )

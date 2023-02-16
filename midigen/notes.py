@@ -31,3 +31,11 @@ class Note(Enum):
 
     def __sub__(self, offset: int):
         return self + (-offset)
+
+    def value_for_octave(self, octave):
+        # default values start at C3 / middle C
+        return self.value + ((octave - 3) * 12)
+
+    @staticmethod
+    def from_value(value: int):
+        return list(Note)[value % 12]

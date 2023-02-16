@@ -10,6 +10,7 @@ from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
 from midigen.humanize import randomize_time, randomize_velocity, swing, pulse
 from midigen.instruments import INSTRUMENTS
+from midigen.markov import Graph
 from midigen import rhythm
 
 
@@ -94,6 +95,8 @@ def main():
 
     args = parser.parse_args()
 
+    keys = [Key.parse(args.key + chord) for chord in args.chords]
+
     def humanize(measure):
         return randomize_velocity(
             randomize_time(
@@ -129,7 +132,7 @@ def main():
         Measure.from_pattern(
             pattern=[
                 # parse relative key from base key + chord; subtract two octaves
-                [Key.parse(args.key + chord)[0].note(degree).value - 24]
+                key.note(degree).value - 24
                 # always play root downbeat
                 for degree in [1] + random.choices(
                     [2, 3, 5, 7],
@@ -141,7 +144,7 @@ def main():
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
-        for chord in args.chords
+        for key, extensions in keys
     ],
         channel=0,
         program=INSTRUMENTS['Acoustic Bass'],
@@ -150,26 +153,40 @@ def main():
 
     chords = Track.from_measures([
         Measure.from_pattern(
-            pattern=[voicing] * 4,
+            pattern=[
+                # keep chords close to the key's root triad
+                key.chord(match_voicing=key.triad())[1:]  # drop root
+            ] * 4,
+            time_signature=TimeSignature(4, 4),
+            velocity=60,
+            duration=0.7
+        ).mutate(humanize)
+        for _ in range(args.loop)
+        for key, extensions in keys
+    ],
+        channel=1,
+        name='chords',
+    )
+
+    melody = Track.from_measures([
+        Measure.from_pattern(
+            pattern=Graph(
+                Key.parse(args.key + chord)[0]
+            ).connect_all().generate_sequence(8),
             time_signature=TimeSignature(4, 4),
             velocity=60,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
         for chord in args.chords
-        for voicing in [Key.parse_chord(
-            args.key + chord,
-            # keep chords close to the key's root triad
-            match_voicing=Key.parse_chord(args.key)
-        )[1:]]  # drop root
-
     ],
-        channel=1,
-        name='chords',
+        channel=2,
+        name='melody',
     )
 
+
     song = Song([
-        beat, bass, chords
+        beat, bass, chords, melody
     ])
 
     if args.output:

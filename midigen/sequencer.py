@@ -2,6 +2,8 @@ import time
 from threading import Thread
 from typing import List
 
+
+import mido
 from mido import Message, MetaMessage, MidiFile, MidiTrack
 from mido import tick2second, bpm2tempo
 from mido.ports import BaseOutput
@@ -191,10 +193,12 @@ class Song:
         mid.save(name)
 
 
-def play_notes(notes, port, spacing_secs: int = 0, velocity: int = 90):
+def play_notes(notes, port, tempo: float = 90, velocity: int = 90):
     """
     Simple function to play a list of notes on a given port.
     """
+    spacing_secs = 60 / tempo
+
     for note in notes:
         port.send(Message(
             'note_on',
@@ -202,7 +206,7 @@ def play_notes(notes, port, spacing_secs: int = 0, velocity: int = 90):
             velocity=velocity
         ))
 
-        time.sleep(max(0.5, spacing_secs / 2))
+        time.sleep(spacing_secs / 2)
 
         port.send(Message(
             'note_off',
@@ -210,3 +214,7 @@ def play_notes(notes, port, spacing_secs: int = 0, velocity: int = 90):
         ))
 
         time.sleep(spacing_secs / 2)
+
+
+def open_output(name: str = 'midigen'):
+    return mido.open_output(name, virtual=True)
