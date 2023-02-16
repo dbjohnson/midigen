@@ -130,10 +130,17 @@ def main():
         Measure.from_pattern(
             pattern=Graph(
                 key,
-                degrees=[1, 5],
                 octave_min=0,
                 octave_max=2
-            ).connect_all().generate_sequence(4),
+            ).strengthen_connections(
+                # strong attractor back to root / fifth
+                [
+                    (key.note(degree), key.note(target))
+                    for degree in range(2, 8)
+                    for target in (1, 5)
+                ],
+                5
+            ).generate_sequence(4),
             time_signature=TimeSignature(4, 4),
             velocity=120,
             duration=0.7
@@ -169,7 +176,7 @@ def main():
                 key=key,
                 octave_min=3,
                 octave_max=4,
-            ).connect_all().generate_sequence(8),
+            ).generate_sequence(8),
             time_signature=TimeSignature(4, 4),
             velocity=90,
             duration=0.7
