@@ -1,6 +1,5 @@
 import os
 import argparse
-import random
 import time
 
 import mido
@@ -130,15 +129,12 @@ def main():
 
     bass = Track.from_measures([
         Measure.from_pattern(
-            pattern=[
-                # parse relative key from base key + chord; subtract two octaves
-                key.note(degree).value - 24
-                # always play root downbeat
-                for degree in [1] + random.choices(
-                    [2, 3, 5, 7],
-                    k=3
-                )
-            ],
+            pattern=Graph(
+                key,
+                degrees=[1, 5],
+                octave_min=0,
+                octave_max=2
+            ).connect_all().generate_sequence(4),
             time_signature=TimeSignature(4, 4),
             velocity=120,
             duration=0.7
@@ -170,20 +166,17 @@ def main():
 
     melody = Track.from_measures([
         Measure.from_pattern(
-            pattern=Graph(
-                Key.parse(args.key + chord)[0]
-            ).connect_all().generate_sequence(8),
+            pattern=Graph(key).connect_all().generate_sequence(8),
             time_signature=TimeSignature(4, 4),
             velocity=60,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
-        for chord in args.chords
+        for key, extensions in keys
     ],
         channel=2,
         name='melody',
     )
-
 
     song = Song([
         beat, bass, chords, melody

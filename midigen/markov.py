@@ -1,5 +1,7 @@
 import random
+from typing import List
 from itertools import permutations
+
 from midigen.keys import Key, Note, Mode
 
 
@@ -29,16 +31,18 @@ class Graph:
     def __init__(
         self,
         key: Key = Key(Note.C, Mode.Major),
+        degrees: List[int] = list(range(1, 8)),
         octave_min: int = 1,
-        octave_max: int = 5
+        octave_max: int = 5,
     ):
         self.key = key
+        self.degrees = degrees
         self.octave_min = octave_min
         self.octave_max = octave_max
         self.nodes = [
-            Node(note.value_for_octave(octave))
+            Node(self.key.note(degree).value_for_octave(octave))
             for octave in range(self.octave_min, self.octave_max + 1)
-            for note in self.key.notes
+            for degree in self.degrees
         ]
 
     def connect_all(self):
