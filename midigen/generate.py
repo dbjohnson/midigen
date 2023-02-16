@@ -7,7 +7,7 @@ import mido
 from midigen.keys import Key
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
-from midigen.humanize import randomize_time, randomize_velocity, swing, pulse
+from midigen.humanize import randomize_time, randomize_velocity, swing, pulse, dropout
 from midigen.instruments import INSTRUMENTS
 from midigen.markov import Graph
 from midigen import rhythm
@@ -97,16 +97,15 @@ def main():
     keys = [Key.parse(args.key + chord) for chord in args.chords]
 
     def humanize(measure):
-        return randomize_velocity(
-            randomize_time(
-                swing(
-                    pulse(measure),
-                    args.swing
-                ),
-                args.randomize
-            ),
-            args.randomize
-        )
+        for mutator, amount in (
+            (pulse, 0.1),
+            (randomize_time, args.randomize),
+            (randomize_velocity, args.randomize),
+            (swing, args.swing),
+            (dropout, 0.1)
+        ):
+            measure = mutator(measure, amount)
+        return measure
 
     beat = Track.string_tracks([
         Track.from_measures([
@@ -166,15 +165,20 @@ def main():
 
     melody = Track.from_measures([
         Measure.from_pattern(
-            pattern=Graph(key).connect_all().generate_sequence(8),
+            pattern=Graph(
+                key=key,
+                octave_min=3,
+                octave_max=4,
+            ).connect_all().generate_sequence(8),
             time_signature=TimeSignature(4, 4),
-            velocity=60,
+            velocity=90,
             duration=0.7
-        ).mutate(humanize)
+        ).mutate(humanize).mutate(dropout).mutate(dropout)
         for _ in range(args.loop)
         for key, extensions in keys
     ],
         channel=2,
+        program=INSTRUMENTS['Vibraphone'],
         name='melody',
     )
 

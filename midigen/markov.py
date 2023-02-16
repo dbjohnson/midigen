@@ -32,8 +32,8 @@ class Graph:
         self,
         key: Key = Key(Note.C, Mode.Major),
         degrees: List[int] = list(range(1, 8)),
-        octave_min: int = 1,
-        octave_max: int = 5,
+        octave_min: int = 2,
+        octave_max: int = 4,
     ):
         self.key = key
         self.degrees = degrees

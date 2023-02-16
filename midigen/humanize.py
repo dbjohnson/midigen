@@ -70,7 +70,7 @@ def randomize_velocity(measure: Measure, frac: float = 0.01):
     )
 
 
-def pulse(measure: Measure, even: bool = True, ducking: float = 0.1):
+def pulse(measure: Measure, ducking: float = 0.1, even: bool = True):
     def pulsed(msg):
         beat, frac = divmod(msg.time, TICKS_PER_BEAT)
         frac /= TICKS_PER_BEAT
@@ -94,4 +94,25 @@ def pulse(measure: Measure, even: bool = True, ducking: float = 0.1):
             msg.copy(velocity=pulsed(msg))
             for msg in measure.messages
         ],
+    )
+
+
+def dropout(measure: Measure, dropout_frac: float = 0.1):
+    """
+    Randomly drop out notes
+    """
+    on_msgs = [msg for msg in measure.messages if msg.type == 'note_on']
+    off_msgs = [msg for msg in measure.messages if msg.type == 'note_off']
+    other_messages = [msg for msg in measure.messages if msg not in on_msgs + off_msgs]
+
+    randomized = [
+        msg
+        for pair in zip(on_msgs, off_msgs)
+        if random.random() > dropout_frac
+        for msg in pair
+    ]
+
+    return Measure(
+        measure.time_signature,
+        sorted(randomized + other_messages, key=lambda msg: msg.time)
     )
