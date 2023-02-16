@@ -25,15 +25,13 @@ midigen --key G --chords ii V I vi  --loop 4 --play
 
 
 ```python
-import mido
 from midigen.notes import Note
 from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, Measure
-from midigen.sequencer import Song, Track
+from midigen.sequencer import Song, Track, open_output
 
 
-# open new midi port via mido
-port = mido.open_output('midigen', virtual=True)
+port = open_output()
 
 # play C minor scale
 Key(Note.C, Mode.Minor).to_track().play(port)

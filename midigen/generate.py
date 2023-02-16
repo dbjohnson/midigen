@@ -102,7 +102,7 @@ def main():
             (randomize_time, args.randomize),
             (randomize_velocity, args.randomize),
             (swing, args.swing),
-            (dropout, 0.1)
+            (dropout, 0.2)
         ):
             measure = mutator(measure, amount)
         return measure
