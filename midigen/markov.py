@@ -85,3 +85,7 @@ class Graph:
         return [
             n.value for n in sequence
         ]
+
+    def follow(self, other: List[int]):
+        start_note = min(self.nodes, key=lambda n: abs(n.value - other[-1]))
+        return self.generate_sequence(len(other), start_note.value)

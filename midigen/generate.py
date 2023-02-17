@@ -170,22 +170,31 @@ def main():
         name='chords',
     )
 
+    melody_sequences = [Graph(
+        keys[0][0],
+        octave_min=3,
+        octave_max=4
+    ).generate_sequence(8)]
+
+    for key, extensions in keys[1:]:
+        melody_sequences.append(Graph(
+            key,
+            octave_min=3,
+            octave_max=4
+        ).follow(melody_sequences[-1]))
+
     melody = Track.from_measures([
         Measure.from_pattern(
-            pattern=Graph(
-                key=key,
-                octave_min=3,
-                octave_max=4,
-            ).generate_sequence(8),
+            pattern,
             time_signature=TimeSignature(4, 4),
             velocity=90,
             duration=0.7
         ).mutate(humanize).mutate(dropout).mutate(dropout)
         for _ in range(args.loop)
-        for key, extensions in keys
+        for pattern in melody_sequences
     ],
         channel=2,
-        program=INSTRUMENTS['Vibraphone'],
+        program=INSTRUMENTS['Kalimba'],
         name='melody',
     )
 
