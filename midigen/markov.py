@@ -31,23 +31,29 @@ class Graph:
     def __init__(
         self,
         key: Key = Key(Note.C, Mode.Major),
+        min_note: int = Note.C.value_for_octave(0),
+        max_note: int = Note.C.value_for_octave(6),
+        edge_weights: List[float] = None,
         degrees: List[int] = list(range(1, 8)),
-        octave_min: int = 2,
-        octave_max: int = 4,
     ):
         self.key = key
         self.degrees = degrees
-        self.octave_min = octave_min
-        self.octave_max = octave_max
+        self.min_note = min_note
+        self.max_note = max_note
         self.nodes = [
-            Node(self.key.note(degree).value_for_octave(octave))
-            for octave in range(self.octave_min, self.octave_max + 1)
+            Node(note_value)
+            for octave in range(6)
             for degree in self.degrees
+            for note_value in [self.key.note(degree).value_for_octave(octave)]
+            if min_note <= note_value <= max_note
         ]
 
         # connect all nodes with edges weighted by distance
-        for n1, n2 in permutations(self.nodes, 2):
-            weight = 1 / (abs(n1.value - n2.value) + 1)
+        for i, (n1, n2) in enumerate(permutations(self.nodes, 2)):
+            if edge_weights:
+                weight = edge_weights[i]
+            else:
+                weight = 1 / (abs(n1.value - n2.value) + 1)
             n1.add_edge(n2, weight)
             n2.add_edge(n1, weight)
 
@@ -89,3 +95,23 @@ class Graph:
     def follow(self, other: List[int]):
         start_note = min(self.nodes, key=lambda n: abs(n.value - other[-1]))
         return self.generate_sequence(len(other), start_note.value)
+
+    def sequences_for_keys(
+        self,
+        keys: List[Key],
+        notes_per_key: int = 8,
+    ):
+        def graph_for_key(key: Key):
+            return Graph(
+                key,
+                self.min_note,
+                self.max_note,
+                degrees=self.degrees,
+                edge_weights=[e.weight for e in self.edges]
+            )
+
+        s = [graph_for_key(keys[0]).generate_sequence(notes_per_key)]
+        for key in keys[1:]:
+            s.append(graph_for_key(key).follow(s[-1]))
+
+        return s

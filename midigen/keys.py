@@ -196,3 +196,6 @@ def _rectify(sequence: List[int]):
         ])
     else:
         return sequence
+
+
+CMajor = Key(Note.C, Mode.Major)

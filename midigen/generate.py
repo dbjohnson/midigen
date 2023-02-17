@@ -4,7 +4,8 @@ import time
 
 import mido
 
-from midigen.keys import Key
+from midigen.keys import Key, CMajor
+from midigen.notes import Note
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
 from midigen.humanize import randomize_time, randomize_velocity, swing, pulse, dropout
@@ -128,25 +129,29 @@ def main():
 
     bass = Track.from_measures([
         Measure.from_pattern(
-            pattern=Graph(
-                key,
-                octave_min=0,
-                octave_max=2
-            ).strengthen_connections(
-                # strong attractor back to root / fifth
-                [
-                    (key.note(degree), key.note(target))
-                    for degree in range(2, 8)
-                    for target in (1, 5)
-                ],
-                5
-            ).generate_sequence(4),
+            pattern,
             time_signature=TimeSignature(4, 4),
             velocity=120,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
-        for key, extensions in keys
+        for pattern in Graph(
+            key=CMajor,
+            min_note=Note.E.value_for_octave(0),
+            max_note=Note.E.value_for_octave(2),
+            degrees=[1, 2, 3, 5]
+        ).strengthen_connections(
+            # strong attractor back to root / fifth
+            [
+                (CMajor.note(degree), CMajor.note(target))
+                for degree in range(2, 8)
+                for target in (1, 5)
+            ],
+            5
+        ).sequences_for_keys(
+            [k for k, e in keys],
+            4
+        )
     ],
         channel=0,
         program=INSTRUMENTS['Acoustic Bass'],
@@ -170,19 +175,6 @@ def main():
         name='chords',
     )
 
-    melody_sequences = [Graph(
-        keys[0][0],
-        octave_min=3,
-        octave_max=4
-    ).generate_sequence(8)]
-
-    for key, extensions in keys[1:]:
-        melody_sequences.append(Graph(
-            key,
-            octave_min=3,
-            octave_max=4
-        ).follow(melody_sequences[-1]))
-
     melody = Track.from_measures([
         Measure.from_pattern(
             pattern,
@@ -191,7 +183,13 @@ def main():
             duration=0.7
         ).mutate(humanize).mutate(dropout).mutate(dropout)
         for _ in range(args.loop)
-        for pattern in melody_sequences
+        for pattern in Graph(
+            min_note=Note.C.value_for_octave(2),
+            max_note=Note.C.value_for_octave(4),
+        ).sequences_for_keys(
+            keys=[k for k, e in keys],
+            notes_per_key=8,
+        )
     ],
         channel=2,
         program=INSTRUMENTS['Kalimba'],
