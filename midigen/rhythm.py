@@ -21,28 +21,28 @@ def measure(
 
 
 def four_on_the_floor(
-    click=[DRUM_NOTES['Kick Drum']],
+    click=DRUM_NOTES['Kick Drum'],
     velocity=127
 ):
     return measure([click, None, None, None] * 4, velocity=velocity)
 
 
 def straight_8ths(
-    click=[DRUM_NOTES['Hi-Hat Closed']],
+    click=DRUM_NOTES['Hi-Hat Closed'],
     velocity=127
 ):
     return measure([click, None] * 8, velocity=velocity)
 
 
 def straight_16ths(
-    click=[DRUM_NOTES['Hi-Hat Closed']],
+    click=DRUM_NOTES['Hi-Hat Closed'],
     velocity=127
 ):
     return measure([click] * 16, velocity=velocity)
 
 
 def son_clave(
-    click=[DRUM_NOTES['Snare Cross Stick']],
+    click=DRUM_NOTES['Snare Cross Stick'],
     velocity=127
 ):
     return measure([
@@ -54,7 +54,7 @@ def son_clave(
 
 
 def rumba_clave(
-    click=[DRUM_NOTES['Snare Cross Stick']],
+    click=DRUM_NOTES['Snare Cross Stick'],
     velocity=127
 ):
     return measure([
@@ -66,7 +66,7 @@ def rumba_clave(
 
 
 def brushes(
-    click=[DRUM_NOTES['Snare Cross Stick']],
+    click=DRUM_NOTES['Snare Cross Stick'],
     velocity=40
 ):
     return measure([

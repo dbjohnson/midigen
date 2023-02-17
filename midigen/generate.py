@@ -1,15 +1,16 @@
 import os
 import argparse
-import random
 import time
 
 import mido
 
-from midigen.keys import Key
+from midigen.keys import Key, CMajor
+from midigen.notes import Note
 from midigen.time import TimeSignature, Measure
 from midigen.sequencer import Track, Song
-from midigen.humanize import randomize_time, randomize_velocity, swing, pulse
+from midigen.humanize import randomize_time, randomize_velocity, swing, pulse, dropout
 from midigen.instruments import INSTRUMENTS
+from midigen.markov import Graph
 from midigen import rhythm
 
 
@@ -94,17 +95,18 @@ def main():
 
     args = parser.parse_args()
 
+    keys = [Key.parse(args.key + chord) for chord in args.chords]
+
     def humanize(measure):
-        return randomize_velocity(
-            randomize_time(
-                swing(
-                    pulse(measure),
-                    args.swing
-                ),
-                args.randomize
-            ),
-            args.randomize
-        )
+        for mutator, amount in (
+            (pulse, 0.1),
+            (randomize_time, args.randomize),
+            (randomize_velocity, args.randomize),
+            (swing, args.swing),
+            (dropout, 0.1)
+        ):
+            measure = mutator(measure, amount)
+        return measure
 
     beat = Track.string_tracks([
         Track.from_measures([
@@ -127,21 +129,29 @@ def main():
 
     bass = Track.from_measures([
         Measure.from_pattern(
-            pattern=[
-                # parse relative key from base key + chord; subtract two octaves
-                [Key.parse(args.key + chord)[0].note(degree).value - 24]
-                # always play root downbeat
-                for degree in [1] + random.choices(
-                    [2, 3, 5, 7],
-                    k=3
-                )
-            ],
+            pattern,
             time_signature=TimeSignature(4, 4),
             velocity=120,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
-        for chord in args.chords
+        for pattern in Graph(
+            key=CMajor,
+            min_note=Note.E.value_for_octave(0),
+            max_note=Note.E.value_for_octave(2),
+            degrees=[1, 5]
+        ).strengthen_connections(
+            # strong attractor back to root / fifth
+            [
+                (CMajor.note(degree), CMajor.note(target))
+                for degree in range(2, 8)
+                for target in (1, 5)
+            ],
+            5
+        ).sequences_for_keys(
+            [k for k, e in keys],
+            4
+        )
     ],
         channel=0,
         program=INSTRUMENTS['Acoustic Bass'],
@@ -150,26 +160,44 @@ def main():
 
     chords = Track.from_measures([
         Measure.from_pattern(
-            pattern=[voicing] * 4,
+            pattern=[
+                # keep chords close to the key's root triad
+                key.chord(match_voicing=key.triad())[1:]  # drop root
+            ] * 4,
             time_signature=TimeSignature(4, 4),
             velocity=60,
             duration=0.7
         ).mutate(humanize)
         for _ in range(args.loop)
-        for chord in args.chords
-        for voicing in [Key.parse_chord(
-            args.key + chord,
-            # keep chords close to the key's root triad
-            match_voicing=Key.parse_chord(args.key)
-        )[1:]]  # drop root
-
+        for key, extensions in keys
     ],
         channel=1,
         name='chords',
+    ).shift_pitch(-12)
+
+    melody = Track.from_measures([
+        Measure.from_pattern(
+            pattern,
+            time_signature=TimeSignature(4, 4),
+            velocity=90,
+            duration=0.7
+        ).mutate(humanize).mutate(dropout).mutate(dropout)
+        for _ in range(args.loop)
+        for pattern in Graph(
+            min_note=Note.C.value_for_octave(3),
+            max_note=Note.C.value_for_octave(5),
+        ).sequences_for_keys(
+            keys=[k for k, e in keys],
+            notes_per_key=8,
+        )
+    ],
+        channel=2,
+        program=INSTRUMENTS['Kalimba'],
+        name='melody',
     )
 
     song = Song([
-        beat, bass, chords
+        beat, bass, chords, melody
     ])
 
     if args.output:

@@ -27,12 +27,18 @@
         </a>
       </div>
       <h1>midigen</h1>
-      <p>Easily generate simple midi backing tracks with matched chord voicings, swing, and randomization</p>
+      <p>Easily generate simple midi backing tracks with matched chord voicings, swing, and randomization.  Note sequences are generated via Markov chain.</p>
 
       <h3>example output</h3>
       <div>
         <midi-visualizer type="piano-roll" id="mainVisualizer" src="demo.mid"></midi-visualizer>
-        <midi-player src="demo.mid" sound-font="" visualizer="#mainVisualizer" id="mainPlayer" loop>
+        <midi-player
+          src="demo.mid"
+          sound-font=""
+          visualizer="#mainVisualizer"
+          id="mainPlayer"
+          loop
+        >
       </div>
       <div style="font-size:10pt;float:right">
         <a href="https://github.com/cifkao/html-midi-player">html-midi-player</a>
@@ -40,15 +46,14 @@
       <h3>command line tool</h3>
       <pre><code class="Bash">midigen --key C --chords ii9 V7 I9 vi7 --loop 5 --tempo 90 --swing 0.05 -o ii-V-i-vi.mid</code></pre>
       <h3>python</h3>
-      <pre><code class="Python">import mido
-from midigen.notes import Note
+      <pre><code class="Python">from midigen.notes import Note
 from midigen.keys import Key, Mode
 from midigen.time import TimeSignature, Measure
-from midigen.sequencer import Song, Track
+from midigen.sequencer import Song, Track, open_output
 
 
-# open new midi port via mido
-port = mido.open_output('midigen', virtual=True)
+# open new midi port
+port = open_output()
 
 # play C minor scale
 Key(Note.C, Mode.Minor).to_track().play(port)

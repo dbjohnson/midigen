@@ -50,7 +50,7 @@ class Measure:
                 msg
                 for i, notes in enumerate(pattern)
                 if notes
-                for note in notes
+                for note in (notes if isinstance(notes, list) else [notes])
                 for msg in [
                     Message(
                         'note_on',
