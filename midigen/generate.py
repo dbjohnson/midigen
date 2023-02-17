@@ -139,7 +139,7 @@ def main():
             key=CMajor,
             min_note=Note.E.value_for_octave(0),
             max_note=Note.E.value_for_octave(2),
-            degrees=[1, 2, 3, 5]
+            degrees=[1, 5]
         ).strengthen_connections(
             # strong attractor back to root / fifth
             [
@@ -173,7 +173,7 @@ def main():
     ],
         channel=1,
         name='chords',
-    )
+    ).shift_pitch(-12)
 
     melody = Track.from_measures([
         Measure.from_pattern(
@@ -184,8 +184,8 @@ def main():
         ).mutate(humanize).mutate(dropout).mutate(dropout)
         for _ in range(args.loop)
         for pattern in Graph(
-            min_note=Note.C.value_for_octave(2),
-            max_note=Note.C.value_for_octave(4),
+            min_note=Note.C.value_for_octave(3),
+            max_note=Note.C.value_for_octave(5),
         ).sequences_for_keys(
             keys=[k for k, e in keys],
             notes_per_key=8,
