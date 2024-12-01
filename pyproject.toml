@@ -17,7 +17,8 @@ classifiers = [
 keywords = ["midi", "generative", "audio", "music"]
 dependencies = [
 	"mido>=1.2.10",
-	"python-rtmidi>=1.4.9"
+	"python-rtmidi>=1.4.9",
+	"setuptools"
 ]
 requires-python = ">=3.6"
 
