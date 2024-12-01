@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "midigen"
-version = "0.0.10"
+version = "0.0.11"
 description = ""
 readme = "README.md"
 authors = [{ name = "Bryan Johnson", email = "d.bryan.johnson@gmail.com" }]
@@ -29,7 +29,7 @@ dev = ["bumpver", "pytest", "build", "twine"]
 Homepage = "https://github.com/dbjohnson/midigen"
 
 [tool.bumpver]
-current_version = "0.0.10"
+current_version = "0.0.11"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
